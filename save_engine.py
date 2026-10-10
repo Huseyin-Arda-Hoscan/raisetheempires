@@ -128,7 +128,9 @@ sys.excepthook = exception_handler
 
 def get_all_sessions():
     sess_int: SqlAlchemySessionInterface = current_app.session_interface
-    sess_model = sess_int.sql_session_model
+    # save_engine.py içindeki get_all_sessions fonksiyonunda sess_model satırını şu şekilde değiştir:
+    sess_model = getattr(sess_int, 'db_session_model', None) or getattr(sess_int, 'sql_session_model', None) or getattr(
+        sess_int, 'session_class', None)
     # record = sess_model.query.filter_by(
     #         id=17).first()
     records = sess_model.query.all()
