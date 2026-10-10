@@ -218,35 +218,44 @@
 										<div id="game_object" style="width: 1000px; min-height: 750px; display: inline-block; margin: 0; padding: 0; border: 0;">
 											<object>
 												<div id='ruffle'></div>
-												<script>
-													window.RufflePlayer = window.RufflePlayer || {};
-													window.RufflePlayer.config = {autoplay: "on", LogLevel: "debug"};
-													const ruffle = window.RufflePlayer.newest();
-													var player = Object.assign(document.getElementById("ruffle").appendChild(ruffle.createPlayer()), {
-														width: 1000,
-														height: 750,
-														style: 'width: 1000px; height: 750px; background-color: #333399;',
-													});
-													player.load({ // https://ruffle.rs/js-docs/master/interfaces/Config.URLLoadOptions.html
-														url: "/files/empire-s.assets.zgncdn.com/assets/109338/ZGame.109338.swf",
-														backgroundColor: "#333399",
-														allowScriptAccess: true,
-														allowFullscreen: true,
-														quality: "high",
-														//autoplay: true,
-														parameters: '\
-															serverTime={{time}}\
-															&is_staging=true\
-															&debugMode=true\
-															&generateSchema=1\
-															&sn_app_url=\
-															&stats=1'
-													}).then(() => {
-														console.info("Ruffle successfully loaded the file");
-													}).catch((e) => {
-														console.error(`Ruffle failed to load the file: ${e}`);
-													});
-												</script>
+												<script type="text/javascript">
+   window.RufflePlayer = window.RufflePlayer || {};
+   window.RufflePlayer.config = {
+       autoplay: "on",
+       letterbox: "on",
+       allowScriptAccess: true
+   };
+
+   const ruffle = window.RufflePlayer.newest();
+   const playerElement = ruffle.createPlayer();
+
+   // Ruffle player elementine ID verip sahte callback desteği tanımlıyoruz
+   playerElement.id = "ZGame";
+   playerElement.name = "ZGame";
+
+   var player = Object.assign(document.getElementById("ruffle").appendChild(playerElement), {
+       width: 1000,
+       height: 750,
+       style: 'width: 1000px; height: 750px; background-color: #333399;',
+   });
+
+   // Flash'ın ExternalInterface.addCallback arayüzünü taklit etme
+   player.SetReturnValue = function() {};
+   player.CallFunction = function() { return "<null/>"; };
+
+   player.load({
+       url: "/files/empire-s.assets.zgncdn.com/assets/109338/ZGame.109338.swf",
+       backgroundColor: "#333399",
+       allowScriptAccess: true,
+       allowFullscreen: true,
+       quality: "high",
+       parameters: 'serverTime={{time}}&is_staging=true&debugMode=true&generateSchema=1&sn_app_url=&stats=1'
+   }).then(() => {
+       console.info("Ruffle successfully loaded the file");
+   }).catch((e) => {
+       console.error(`Ruffle failed to load the file: ${e}`);
+   });
+</script>
 											</object>
 										</div>
 										<!-- Loading game div is rendered on top of the flash object. -->
