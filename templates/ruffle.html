@@ -13,11 +13,25 @@
 	<link rel="stylesheet" href="css/tooltiplink.css"/>
 	<link rel="stylesheet" href="css/zbar.css"/>
 	<!-- JS -->
-	<script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
-	<script src="js/flash.js"></script>
-	<script src="js/session.js"></script>
-	<script src="js/empires.js"></script>
-	<script>
+	<!-- JS -->
+    <script>
+        window.RufflePlayer = window.RufflePlayer || {};
+        window.RufflePlayer.config = {
+            letterbox: "on",
+            allowScriptAccess: true,
+            autoplay: "on",
+            unmuteOverlay: "hidden",
+            parameters: {
+                allowScriptAccess: "always",
+                allowNetworking: "all"
+            }
+        };
+    </script>
+    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+    <script src="js/flash.js"></script>
+    <script src="js/session.js"></script>
+    <script src="js/empires.js"></script>
+    <script>
 		function getUserInfo() {
 			console.log("getUserInfo called");
 			inner_getUserInfo();
@@ -216,7 +230,7 @@
 													player.load({ // https://ruffle.rs/js-docs/master/interfaces/Config.URLLoadOptions.html
 														url: "/files/empire-s.assets.zgncdn.com/assets/109338/ZGame.109338.swf",
 														backgroundColor: "#333399",
-														allowScriptAccess: false,
+														allowScriptAccess: true,
 														allowFullscreen: true,
 														quality: "high",
 														//autoplay: true,
