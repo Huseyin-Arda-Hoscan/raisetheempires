@@ -249,7 +249,15 @@
        allowScriptAccess: true,
        allowFullscreen: true,
        quality: "high",
-       parameters: 'serverTime={{time}}&is_staging=true&debugMode=true&generateSchema=1&sn_app_url=&stats=1'
+       parameters: '\
+       serverTime={{time}}\
+       &is_staging=true\
+       &debugMode=true\
+       &generateSchema=1\
+       &sn_app_url=/\
+       &gateway_url=/files/empire-s.assets.zgncdn.com/assets/109338/127.0.0.1flashservices/gateway.php\
+       &flashservices_url=/files/empire-s.assets.zgncdn.com/assets/109338/127.0.0.1flashservices/gateway.php\
+       &stats=1'
    }).then(() => {
        console.info("Ruffle successfully loaded the file");
    }).catch((e) => {
