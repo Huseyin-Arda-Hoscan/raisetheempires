@@ -2831,26 +2831,5 @@ MsgSpecSerializer.__init__ = serializer_init_patch
 
 
 if __name__ == '__main__':
-    if 'WERKZEUG_RUN_MAIN' not in os.environ and settings.open_browser:
-        if os.path.exists(os.path.join("chromium", "chrome.exe")):
-            threading.Timer(1.25, lambda: os.system(os.path.join("chromium", "chrome.exe") + " --user-data-dir=\"" + os.path.join(my_games_path(), "chromium-profile") + "\"" + " --allow-outdated-plugins " + ("--app=" if settings.app_mode else "") + "http://" + settings.http_host + ":" + str(settings.port) + "/" + settings.http_path)).start()
-        elif os.path.exists(os.path.join("chromium", "chrome")):
-            threading.Timer(1.25, lambda: os.system(os.path.join("chromium", "chrome") + " --user-data-dir=\"" + os.path.join(my_games_path(), "chromium-profile") + "\"" + " --–allow-outdated-plugins " + ("--app=" if settings.app_mode else "") + "http://" + settings.http_host + ":" + str(settings.port) + "/" + settings.http_path)).start()
-        else:
-            threading.Timer(1.25, lambda: webbrowser.open("http://" + settings.http_host + ":" + str(settings.port) + "/" + settings.http_path)).start()
-    # init_db(app, db)
-    set_crash_log(settings.crash_log)
-    if settings.compression:
-        compress.init_app(app)
-    socketio.init_app(app)
-    db.init_app(app)
-    sess.init_app(app)
-    # session.app.session_interface.db.create_all()
-    # app.session_interface.db.create_all()
-    # db.create_all()
-
-    socketio.run(app, host=settings.host, port=settings.port, debug=settings.debug, allow_unsafe_werkzeug=True)
-    # app.run(host='127.0.0.1', port=5005, debug=True)
-    # logging.getLogger('socketio').setLevel(logging.ERROR)
-    # logging.getLogger('engineio').setLevel(logging.ERROR)
-    # logging.getLogger('geventwebsocket.handler').setLevel(logging.ERROR)
+    port = int(os.environ.get("PORT", 5005))
+    app.run(host="0.0.0.0", port=port)

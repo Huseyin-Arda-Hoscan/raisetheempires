@@ -56,25 +56,19 @@ def create_backup(message):
     session["backup"]['message'] = message
 
 def save_database_uri(root_path, instance_path):
-    save_db_path = os.path.join(my_games_path(), "save.db")
+    # 1. instance klasörünün fiziksel olarak var olmasını garantiye al
+    if not os.path.exists(instance_path):
+        os.makedirs(instance_path, exist_ok=True)
 
-    if os.path.samefile(my_games_path(), root_path):
-        new_save_db_path = os.path.join(instance_path, "save.db")
-        if os.path.exists(save_db_path):
-            if not os.path.exists(new_save_db_path):
-                print("INFORMATION: You're running from source, and because of Flask update save.db has to be moved to the instance folder. Installs out of folder should be unaffected")
-                if not os.path.exists(instance_path):
-                    os.makedirs(instance_path)
-                backup_save_dir_path = os.path.join(my_games_path(), "backup-save-db")
-                if not os.path.exists(backup_save_dir_path):
-                    os.makedirs(backup_save_dir_path)
-                shutil.copy(save_db_path, backup_save_dir_path)
-                shutil.move(save_db_path, new_save_db_path)
-                print("Moved your save.db to", instance_path, "and a backup can be found at", backup_save_dir_path)
-            else:
-                print("WARNING: You have a save.db in both the root as the instance folder (when running from source), only the instance one will be used!")
-        save_db_path = new_save_db_path
+    new_save_db_path = os.path.join(instance_path, "save.db")
 
+    # 2. Eğer instance altında save.db yoksa, hazır savespack/save.db dosyasını kopyala
+    starter_db = os.path.join(root_path, "savespack", "save.db")
+    if not os.path.exists(new_save_db_path) and os.path.exists(starter_db):
+        shutil.copy(starter_db, new_save_db_path)
+        print("INFORMATION: Copied starter save.db from savespack to instance folder.")
+
+    save_db_path = new_save_db_path
     print("SQLITE", f"sqlite:///{save_db_path}")
 
     return f"sqlite:///{save_db_path}"
