@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="tr">
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Social Wars - Komutan Profili</title>
+        <link rel="shortcut icon" href="img/icon.png"/>
+	    <link rel="icon" type="image/gif" href="img/icon.png"/>
+		<link rel="stylesheet" href="css/facebook.css"/>
+        <style>
+            body {
+                background: #eceff5;
+                font-family: "Lucida Grande", Tahoma, Verdana, Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                max-width: 800px;
+                margin: 30px auto;
+                padding: 0 15px;
+            }
+            .header-bar {
+                background: #3b5998;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 6px 6px 0 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .header-bar a {
+                color: #fff;
+                text-decoration: none;
+                font-size: 13px;
+                font-weight: bold;
+                background: rgba(0,0,0,0.15);
+                padding: 6px 12px;
+                border-radius: 4px;
+            }
+            .header-bar a:hover {
+                background: rgba(0,0,0,0.3);
+            }
+            .card {
+                background: white;
+                border: 1px solid #c4cde0;
+                border-top: none;
+                padding: 25px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                margin-bottom: 20px;
+            }
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                gap: 15px;
+                margin: 20px 0;
+            }
+            .stat-box {
+                background: #f7f8fa;
+                border: 1px solid #e2e6f0;
+                border-radius: 6px;
+                padding: 15px;
+                text-align: center;
+            }
+            .stat-box .title {
+                font-size: 12px;
+                color: #666;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            .stat-box .value {
+                font-size: 22px;
+                font-weight: bold;
+                color: #1c2a47;
+                margin-top: 5px;
+            }
+            .btn-play-big {
+                display: block;
+                background: linear-gradient(#f0b310, #c48a04);
+                color: white;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+                border: 1px solid #9c6c02;
+                border-radius: 6px;
+                padding: 16px;
+                text-align: center;
+                font-size: 20px;
+                font-weight: bold;
+                text-decoration: none;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+                margin: 20px 0;
+            }
+            .btn-play-big:hover {
+                background: linear-gradient(#ffc526, #d89906);
+            }
+            .form-section {
+                border-top: 1px solid #eceff5;
+                padding-top: 20px;
+                margin-top: 20px;
+            }
+            .form-row {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 12px;
+            }
+            .form-row input {
+                flex: 1;
+                padding: 8px 10px;
+                border: 1px solid #bdc7d8;
+                border-radius: 4px;
+                font-size: 13px;
+            }
+            .btn-save {
+                background: #5b74a8;
+                color: white;
+                border: 1px solid #29447e;
+                border-radius: 4px;
+                padding: 8px 14px;
+                font-size: 13px;
+                font-weight: bold;
+                cursor: pointer;
+            }
+            .alert-success {
+                background-color: #e7f4e4;
+                border: 1px solid #7cb372;
+                color: #3b7430;
+                padding: 10px;
+                border-radius: 4px;
+                font-size: 13px;
+                margin-bottom: 15px;
+            }
+            .alert-danger {
+                background-color: #ffebe8;
+                border: 1px solid #dd3c10;
+                color: #dd3c10;
+                padding: 10px;
+                border-radius: 4px;
+                font-size: 13px;
+                margin-bottom: 15px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+                font-size: 13px;
+            }
+            th, td {
+                padding: 8px 12px;
+                border-bottom: 1px solid #eef0f5;
+                text-align: left;
+            }
+            th {
+                background: #f7f8fa;
+                color: #555;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header-bar">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <img src="img/icon.png" style="height: 24px;" alt="icon"/>
+                    <span style="font-size: 16px; font-weight: bold;">Social Wars Komuta Merkezi</span>
+                </div>
+                <div>
+                    <a href="/play.html">Oyuna Gir</a>
+                    <a href="/logout" style="margin-left: 6px; background: rgba(180,0,0,0.3);">Çıkış</a>
+                </div>
+            </div>
+
+            <div class="card">
+                {% if msg %}
+                <div class="alert-{{ msg_type }}">
+                    {{ msg }}
+                </div>
+                {% endif %}
+
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 style="margin: 0; color: #1c2a47;">Hoş Geldin, Komutan {{ user.username }}!</h2>
+                        <p style="margin: 4px 0 0 0; color: #666; font-size: 13px;">E-posta: {{ user.email }} | Kayıt Tarihi: {{ user.created_at }}</p>
+                    </div>
+                    <img src="img/worker.png" style="height: 50px;" alt="Worker"/>
+                </div>
+
+                <a href="/play.html" class="btn-play-big">⚔️ OYUNU BAŞLAT & SAVAŞA KATIL ⚔️</a>
+
+                <h3 style="color: #3b5998; margin-bottom: 10px; font-size: 15px;">📊 İmparatorluk Durumu</h3>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="title">Seviye (Level)</div>
+                        <div class="value">⭐ {{ info.level }}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="title">Deneyim (XP)</div>
+                        <div class="value">{{ info.xp }}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="title">Social Cash</div>
+                        <div class="value" style="color: #2b7a1e;">💵 {{ info.cash }}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="title">Altın (Coins)</div>
+                        <div class="value" style="color: #d19400;">🪙 {{ info.coins }}</div>
+                    </div>
+                </div>
+
+                <!-- DİĞER KOMUTANLAR (ARKADAŞLAR) -->
+                <div class="form-section">
+                    <h3 style="color: #3b5998; margin-top: 0; font-size: 15px;">👥 Sunucudaki Komutanlar (Arkadaşların)</h3>
+                    <p style="font-size: 12px; color: #666;">Aşağıdaki oyuncular Social Wars oyun içinde arkadaş listende komşu olarak görünür.</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Komutan Adı</th>
+                                <th>E-posta</th>
+                                <th>Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for player in all_players %}
+                            <tr {% if player.id == user.id %}style="background: #fdfae7; font-weight: bold;"{% endif %}>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ player.username }} {% if player.id == user.id %}(Sen){% endif %}</td>
+                                <td>{{ player.email }}</td>
+                                <td><span style="color: green;">● Aktif Müttefik</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- ŞİFRE VE PROFİL AYARLARI -->
+                <div class="form-section">
+                    <h3 style="color: #3b5998; margin-top: 0; font-size: 15px;">⚙️ Hesap Ayarları</h3>
+
+                    <form method="POST" action="/profile" style="margin-bottom: 20px;">
+                        <input type="hidden" name="action" value="update_profile"/>
+                        <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 5px;">Komutan Adını Güncelle:</label>
+                        <div class="form-row">
+                            <input type="text" name="username" value="{{ user.username }}" required/>
+                            <button type="submit" class="btn-save">İsmi Değiştir</button>
+                        </div>
+                    </form>
+
+                    <form method="POST" action="/profile">
+                        <input type="hidden" name="action" value="change_password"/>
+                        <label style="font-size: 13px; font-weight: bold; display: block; margin-bottom: 5px;">Şifre Değiştir:</label>
+                        <div class="form-row">
+                            <input type="password" name="old_password" placeholder="Mevcut Şifre" required/>
+                            <input type="password" name="new_password" placeholder="Yeni Şifre" required/>
+                            <input type="password" name="confirm_new_password" placeholder="Yeni Şifre Tekrar" required/>
+                            <button type="submit" class="btn-save">Şifreyi Güncelle</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div style="text-align: center; font-size: 12px; color: #999;">
+                <p>Social Wars Server ~ Sürüm: {{ version }}</p>
+            </div>
+        </div>
+    </body>
+</html>

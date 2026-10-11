@@ -1,0 +1,32 @@
+{
+	"auctions":
+	[
+		{
+			"uuid": "1",
+			"unit": 1167,
+			"level": 1,
+			"interval": 120,
+			"price": 5000,
+			"priceIncrement": 1000,
+			"betPrice": 2
+		},
+		{
+			"uuid": "2",
+			"unit": 1168,
+			"level": 1,
+			"interval": 60,
+			"price": 1000,
+			"priceIncrement": 200,
+			"betPrice": 2
+		},
+		{
+			"uuid": "3",
+			"unit": 1226,
+			"level": 2,
+			"interval": 120,
+			"price": 8000,
+			"priceIncrement": 1500,
+			"betPrice": 2
+		}
+	]
+}

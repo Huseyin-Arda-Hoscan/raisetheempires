@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <title>Social Wars</title>
+        <link rel="shortcut icon" href="img/icon.png"/>
+        <link rel="icon" type="image/gif" href="img/icon.png"/>
+    </head>
+    <body style="font-family: 'lucida grande',tahoma,verdana,arial,sans-serif; background-color: #f7f7f7;">
+        <center>
+            <!-- SESSION HEADER -->
+            <div id="header" style="width: 760px; margin-top: 30px;">
+                <div id="session" style="float: right;">
+                    <p style="display:inline">Komutan: <b>{{save_info.name}}</b> (Level {{save_info.level}}) | 
+                        <a href="/profile" style="color: #3b5998; text-decoration: none; font-weight: bold;">Profilim</a> | 
+                        <a href="/logout" style="color: #c00; text-decoration: none;">Çıkış Yap</a>
+                    </p>
+                </div>
+                <div style="float: left;">
+                    <img src="img/logo.png" style="height: 35px;"/>
+                </div>
+                <div style="clear: both;"></div>
+            </div>
+            <br>
+            <!-- GAME BAR -->
+            <div id="gameBar">
+                <div id="gamebar_buttons">
+                    <a class="gameBarButton gameBarButtonSelected" href="#"><div><img src="img/icon.png">Oyunu Oyna</div></a>
+                    <a class="gameBarButton" href="/profile"><div><img src="img/worker.png">Profil & İmparatorluk</div></a>
+                    <a class="gameBarButton" href="https://discord.gg/zW5gSbQJBw" target="_blank"><div><img src="img/discord.png">Discord</div></a>
+                </div>
+                <style>
+                    #gameBar {
+                        text-align: left;
+                        width: 760px;
+                        margin-top: 5px;
+                        margin-bottom: 0px;
+                        padding: 0px;
+                    }
+                    #gamebar_buttons {
+                        background-color:rgb(97, 104, 7);
+                        border: solid rgb(65, 70, 3) 3px;
+                        border-bottom: solid rgb(65, 70, 3) 4px;
+                        border-top-left-radius: 6px;
+                        border-top-right-radius: 6px;
+                    }
+                    .gameBarButton {
+                        display: inline-block;
+                        height: 19px;
+                        color: black;
+                        border: solid 1.5px;
+                        border-color: rgb(80, 79, 29);
+                        background-color:rgb(249, 250, 202);
+                        border-top-left-radius: 5px;
+                        border-top-right-radius: 5px;
+                        cursor: pointer;
+                        text-decoration: none;
+                        font-size: 11pt;
+                        padding: 2px 6px 1px 6px; 
+                    }
+                    .gameBarButtonSelected {
+                        background-color:rgb(233, 221, 81);
+                        font-weight: bold;
+                    }
+                    .gameBarButton img {
+                        height: 17px;
+                        padding-right: 4px;
+                        vertical-align: middle;
+                    }
+                    .gameBarButton:hover {
+                        background-color:rgb(250, 237, 90);
+                        text-decoration: none;
+                    }
+                </style>
+            </div>
+            <!-- EMBED GAME -->
+            <object>
+                <embed id="swf"
+                    src="{{BASE_URL}}/static/socialwars/flash/SWLoader.swf?swftoload=/static/socialwars/flash/{{GAMEVERSION}}"
+                    allowFullScreen="true" bgcolor="#669C2C" quality="high" WIDTH="760" HEIGHT="600" NAME="se" ALIGN=""
+                    TYPE="application/x-shockwave-flash" PLUGINSPAGE="http://www.macromedia.com/go/getflashplayer"
+                    flashvars='spdebug=notnull&brk=0
+                    &staticUrl={{BASE_URL}}/static/socialwars/&brk=0
+                    &dynamicUrl={{BASE_URL}}/dynamic/menvswomen/srvsexwars/&brk=0
+                    &skiphash12341=notnull&brk=0
+                    &fb_sig_user={{save_info.userid}}&brk=0
+                    &user_key=123456789&brk=0
+                    &language=en&brk=0
+                    &accessToken=AAABbZAm0wdMUBALsOrR0Ho68CLjaOT8SV3vftKg9mbo1zZColaW5FljRVaLxPGxXXnm1M98mTZCAttcQ4GHwvSyXfsyxYmvKMH8Hmn5iliSPnjvIsZA6&brk=0
+                    &sex=m&brk=0
+                    &lastLoggedIn=1349266517&brk=0
+                    &dailyBonus=0&brk=0
+                    &friendsInfo={{friendsInfo | tojson}}&brk=0
+                    &serverTime={{serverTime}}&brk=0
+                    &forceSyncError=1&brk=0
+                    &forceAttackReload=0&brk=0
+                    &forceQuestReload=0&brk=0'>
+                </embed>
+            </object>
+            <br>
+            <a id="expand" href="#" style="text-decoration: none; color: #777; font-size: 13px;"></a>
+            <div style="margin-top: 10px; font-size: 12px; color: #888;">
+                <p>💡 Flash çalışmıyorsa Ruffle uzantısı veya Flash destekleyen bir tarayıcı (Flash Browser / Pale Moon) kullandığınızdan emin olun.</p>
+            </div>
+            <script>
+                if (getCookie("expand") == "1") expand();
+                else contract();
+
+                function expand() {
+                    setCookie("expand", "1", 60);
+                    document.getElementById('swf').width='100%';
+                    document.getElementById('expand').onclick=contract;
+                    document.getElementById('expand').innerText=">> Küçült <<";
+                }
+
+                function contract() {
+                    setCookie("expand", "0", 60);
+                    document.getElementById('swf').width='760';
+                    document.getElementById('expand').onclick=expand;
+                    document.getElementById('expand').innerText="<< Genişlet >>";
+                }
+
+                function setCookie(c_name, value, exdays) {
+                    var exdate = new Date();
+                    exdate.setDate(exdate.getDate() + exdays);
+                    var c_value = escape(value) + ((exdays == null) ? "" : "; expires=" + exdate.toUTCString());
+                    document.cookie = c_name + "=" + c_value;
+                }
+
+                function getCookie(c_name) {
+                    var i, x, y, ARRcookies = document.cookie.split(";");
+                    for (i = 0; i < ARRcookies.length; i++) {
+                        x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
+                        y = ARRcookies[i].substr(ARRcookies[i].indexOf("=") + 1);
+                        x = x.replace(/^\s+|\s+$/g, "");
+                        if (x == c_name) {
+                            return unescape(y);
+                        }
+                    }
+                    return null;
+                }
+            </script>
+        </center>
+    </body>
+</html>

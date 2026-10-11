@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="tr">
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Social Wars - Kayıt Ol</title>
+        <link rel="shortcut icon" href="img/icon.png"/>
+	    <link rel="icon" type="image/gif" href="img/icon.png"/>
+		<link rel="stylesheet" href="css/facebook.css"/>
+        <style>
+            body {
+                background: #eceff5;
+                font-family: "Lucida Grande", Tahoma, Verdana, Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+            }
+            .register-card {
+                background: #fff;
+                border: 1px solid #c4cde0;
+                border-radius: 8px;
+                padding: 25px 35px;
+                width: 400px;
+                margin: 30px auto;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            }
+            .form-group {
+                margin-bottom: 14px;
+                text-align: left;
+            }
+            .form-group label {
+                display: block;
+                font-weight: bold;
+                font-size: 13px;
+                color: #333;
+                margin-bottom: 5px;
+            }
+            .form-group input {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 9px 12px;
+                border: 1px solid #bdc7d8;
+                border-radius: 4px;
+                font-size: 14px;
+                outline: none;
+            }
+            .form-group input:focus {
+                border-color: #3b5998;
+                box-shadow: 0 0 4px rgba(59,89,152,0.3);
+            }
+            .btn-register {
+                width: 100%;
+                background: linear-gradient(#67a54b, #438227);
+                color: white;
+                border: 1px solid #36661e;
+                border-radius: 4px;
+                padding: 11px;
+                font-size: 15px;
+                font-weight: bold;
+                cursor: pointer;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+                margin-top: 5px;
+            }
+            .btn-register:hover {
+                background: linear-gradient(#78b95a, #4e942f);
+            }
+            .alert-error {
+                background-color: #ffebe8;
+                border: 1px solid #dd3c10;
+                color: #dd3c10;
+                padding: 10px;
+                border-radius: 4px;
+                font-size: 13px;
+                margin-bottom: 15px;
+                text-align: center;
+            }
+            .divider {
+                border-top: 1px solid #e5e5e5;
+                margin: 20px 0;
+            }
+            .login-link {
+                text-align: center;
+                font-size: 14px;
+            }
+            .login-link a {
+                color: #3b5998;
+                font-weight: bold;
+                text-decoration: none;
+            }
+            .login-link a:hover {
+                text-decoration: underline;
+            }
+            .bonus-box {
+                background: #fffbe2;
+                border: 1px dashed #e2c044;
+                padding: 8px 12px;
+                border-radius: 4px;
+                font-size: 12px;
+                color: #665200;
+                margin-bottom: 15px;
+            }
+        </style>
+    </head>
+    <body>
+        <div style="text-align: center; margin-top: 30px;">
+            <img src="img/logo.png" style="width: 200px;" alt="Social Wars"/>
+            <p style="color: #666; font-size: 13px; margin-top: 5px;">Yeni İmparatorluk Oluştur ~ {{version}}</p>
+        </div>
+
+        <div class="register-card">
+            <h2 style="margin-top: 0; font-size: 18px; color: #1c2a47; border-bottom: 1px solid #eceff5; padding-bottom: 10px;">
+                Hesap ve İmparatorluk Kaydı
+            </h2>
+
+            <div class="bonus-box">
+                🎁 <b>Başlangıç Hediyesi:</b> Yeni hesabınızla beraber 500 Cash, 50.000 Altın, 50.000 Odun, 25.000 Çelik ve Petrol hesabınıza tanımlanır!
+            </div>
+
+            {% if error %}
+            <div class="alert-error">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="/register">
+                <div class="form-group">
+                    <label for="username">Komutan / İmparatorluk Adı:</label>
+                    <input type="text" id="username" name="username" placeholder="Örn: General Alex" required autofocus/>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">E-posta Adresi:</label>
+                    <input type="email" id="email" name="email" placeholder="ornek@mail.com" required/>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Şifre:</label>
+                    <input type="password" id="password" name="password" placeholder="En az 4 karakter" required/>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password">Şifre Tekrar:</label>
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Şifrenizi tekrar girin" required/>
+                </div>
+
+                <button type="submit" class="btn-register">İmparatorluğu Kur & Başla</button>
+            </form>
+
+            <div class="divider"></div>
+
+            <div class="login-link">
+                Zaten hesabın var mı? <br>
+                <a href="/login">Giriş Yap</a>
+            </div>
+        </div>
+
+        <div style="text-align: center; font-size: 12px; color: #999; margin-bottom: 30px;">
+            <p>Social Warriors Preservation Project &copy; 2026</p>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="tr">
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Social Wars - Giriş Yap</title>
+        <link rel="shortcut icon" href="img/icon.png"/>
+	    <link rel="icon" type="image/gif" href="img/icon.png"/>
+		<link rel="stylesheet" href="css/facebook.css"/>
+        <style>
+            body {
+                background: #eceff5;
+                font-family: "Lucida Grande", Tahoma, Verdana, Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+            }
+            .login-card {
+                background: #fff;
+                border: 1px solid #c4cde0;
+                border-radius: 8px;
+                padding: 25px 35px;
+                width: 380px;
+                margin: 40px auto;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            }
+            .form-group {
+                margin-bottom: 16px;
+                text-align: left;
+            }
+            .form-group label {
+                display: block;
+                font-weight: bold;
+                font-size: 13px;
+                color: #333;
+                margin-bottom: 6px;
+            }
+            .form-group input {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 10px 12px;
+                border: 1px solid #bdc7d8;
+                border-radius: 4px;
+                font-size: 14px;
+                outline: none;
+            }
+            .form-group input:focus {
+                border-color: #3b5998;
+                box-shadow: 0 0 4px rgba(59,89,152,0.3);
+            }
+            .btn-login {
+                width: 100%;
+                background: linear-gradient(#5b74a8, #3b5998);
+                color: white;
+                border: 1px solid #29447e;
+                border-radius: 4px;
+                padding: 11px;
+                font-size: 15px;
+                font-weight: bold;
+                cursor: pointer;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            }
+            .btn-login:hover {
+                background: linear-gradient(#6d86b9, #4c66a4);
+            }
+            .alert-error {
+                background-color: #ffebe8;
+                border: 1px solid #dd3c10;
+                color: #dd3c10;
+                padding: 10px;
+                border-radius: 4px;
+                font-size: 13px;
+                margin-bottom: 15px;
+                text-align: center;
+            }
+            .divider {
+                border-top: 1px solid #e5e5e5;
+                margin: 20px 0;
+            }
+            .register-link {
+                text-align: center;
+                font-size: 14px;
+            }
+            .register-link a {
+                color: #3b5998;
+                font-weight: bold;
+                text-decoration: none;
+            }
+            .register-link a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <div style="text-align: center; margin-top: 40px;">
+            <img src="img/logo.png" style="width: 220px;" alt="Social Wars"/>
+            <p style="color: #666; font-size: 13px; margin-top: 5px;">Arkadaşlarla Çok Oyunculu Özel Sunucu ~ {{version}}</p>
+        </div>
+
+        <div class="login-card">
+            <h2 style="margin-top: 0; font-size: 18px; color: #1c2a47; border-bottom: 1px solid #eceff5; padding-bottom: 10px;">
+                Hesabına Giriş Yap
+            </h2>
+
+            {% if error %}
+            <div class="alert-error">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="/login">
+                <div class="form-group">
+                    <label for="email">E-posta Adresi:</label>
+                    <input type="email" id="email" name="email" placeholder="ornek@mail.com" required autofocus/>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Şifre:</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required/>
+                </div>
+
+                <button type="submit" class="btn-login">Giriş Yap ve Oyna</button>
+            </form>
+
+            <div class="divider"></div>
+
+            <div class="register-link">
+                Hesabın yok mu? <br>
+                <a href="/register">Yeni İmparatorluk Kur (Kayıt Ol)</a>
+            </div>
+        </div>
+
+        <div style="text-align: center; font-size: 12px; color: #999; margin-bottom: 30px;">
+            <p>Social Warriors Preservation Project &copy; 2026</p>
+        </div>
+    </body>
+</html>
