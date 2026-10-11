@@ -43,6 +43,12 @@ def init_db():
                 save_data TEXT NOT NULL,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+            CREATE TABLE IF NOT EXISTS announcements (
+                id SERIAL PRIMARY KEY,
+                message TEXT NOT NULL,
+                author TEXT DEFAULT 'Admin',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
         ''')
         conn.commit()
         
@@ -82,6 +88,14 @@ def init_db():
                 village_id TEXT PRIMARY KEY,
                 save_data TEXT NOT NULL,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS announcements (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                message TEXT NOT NULL,
+                author TEXT DEFAULT 'Admin',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         ''')
         try:
@@ -286,3 +300,64 @@ def db_load_all_villages():
     finally:
         conn.close()
     return villages
+
+def delete_user_and_village(user_id):
+    """Kullaniciyi ve veritabanindaki tum koy kaydini kalici olarak siler."""
+    conn = get_connection()
+    try:
+        user = get_user_by_id(user_id)
+        if not user:
+            return False
+        vid = str(user.get('village_id', ''))
+        cursor = conn.cursor()
+        if is_postgres():
+            cursor.execute('DELETE FROM users WHERE id = %s', (user_id,))
+            if vid:
+                cursor.execute('DELETE FROM village_saves WHERE village_id = %s', (vid,))
+        else:
+            cursor.execute('DELETE FROM users WHERE id = ?', (user_id,))
+            if vid:
+                cursor.execute('DELETE FROM village_saves WHERE village_id = ?', (vid,))
+        conn.commit()
+        return vid
+    except Exception as e:
+        print(f"[DELETE USER ERROR] {e}")
+        return False
+    finally:
+        conn.close()
+
+def add_announcement(message, author='Komutan (Admin)'):
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        if is_postgres():
+            cursor.execute('INSERT INTO announcements (message, author) VALUES (%s, %s)', (message, author))
+        else:
+            cursor.execute('INSERT INTO announcements (message, author) VALUES (?, ?)', (message, author))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"[ANNOUNCEMENT ERROR] {e}")
+        return False
+    finally:
+        conn.close()
+
+def get_latest_announcements(limit=5):
+    conn = get_connection()
+    announcements = []
+    try:
+        if is_postgres():
+            import psycopg2.extras
+            dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            dict_cur.execute('SELECT id, message, author, created_at FROM announcements ORDER BY id DESC LIMIT %s', (limit,))
+            announcements = [dict(r) for r in dict_cur.fetchall()]
+        else:
+            cursor = conn.cursor()
+            cursor.execute('SELECT id, message, author, created_at FROM announcements ORDER BY id DESC LIMIT ?', (limit,))
+            announcements = [dict(r) for r in cursor.fetchall()]
+    except Exception as e:
+        print(f"[GET ANNOUNCEMENT ERROR] {e}")
+    finally:
+        conn.close()
+    return announcements
+

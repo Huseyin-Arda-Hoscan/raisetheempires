@@ -175,9 +175,9 @@ def profile():
         'coins': 0
     }
     
-    all_players = get_all_users()
-    
-    return render_template('profile.html', user=user, info=info, all_players=all_players, msg=msg, msg_type=msg_type, version=version_name)
+    from database import get_latest_announcements
+    announcements = get_latest_announcements(limit=3)
+    return render_template('profile.html', user=user, info=info, all_players=all_players, announcements=announcements, msg=msg, msg_type=msg_type, version=version_name)
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
@@ -220,6 +220,42 @@ def admin():
             msg = f'Sunucu Etkinliği Başlatıldı! {c} oyuncuya hediyeler dağıtıldı!'
             msg_type = 'success'
 
+        elif action == 'delete_user':
+            del_id = request.form.get('user_id')
+            if str(del_id) == str(user['id']):
+                msg = 'Kendi admin hesabınızı silemezsiniz!'
+                msg_type = 'danger'
+            else:
+                from database import delete_user_and_village
+                from sessions import __saves
+                deleted_vid = delete_user_and_village(del_id)
+                if deleted_vid:
+                    # RAM'deki ve diskteki oturumu da kaldir
+                    if str(deleted_vid) in __saves:
+                        del __saves[str(deleted_vid)]
+                    import os
+                    from bundle import SAVES_DIR
+                    for s_name in [f"{deleted_vid}.save.json", f"{deleted_vid}.json"]:
+                        s_path = os.path.join(SAVES_DIR, s_name)
+                        if os.path.exists(s_path):
+                            try:
+                                os.remove(s_path)
+                            except Exception:
+                                pass
+                    msg = f'Hesap ve tüm köy verileri veritabanından kalıcı olarak silindi!'
+                    msg_type = 'success'
+                else:
+                    msg = 'Hesap silinirken bir hata oluştu veya bulunamadı.'
+                    msg_type = 'danger'
+
+        elif action == 'broadcast_message':
+            announcement_text = request.form.get('announcement_text', '').strip()
+            if announcement_text:
+                from database import add_announcement
+                add_announcement(announcement_text, author=user['username'])
+                msg = f'Duyuru / Mesaj tüm oyunculara başarıyla yayınlandı!'
+                msg_type = 'success'
+
     all_users = get_all_users()
     players_data = []
     for u in all_users:
@@ -235,7 +271,9 @@ def admin():
             'info': u_info
         })
         
-    return render_template('admin.html', players_data=players_data, msg=msg, msg_type=msg_type, version=version_name)
+    from database import get_latest_announcements
+    announcements = get_latest_announcements(limit=5)
+    return render_template('admin.html', players_data=players_data, announcements=announcements, msg=msg, msg_type=msg_type, version=version_name)
 
 @app.route('/play.html')
 def play():

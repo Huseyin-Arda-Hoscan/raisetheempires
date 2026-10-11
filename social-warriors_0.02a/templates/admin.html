@@ -206,6 +206,7 @@
                             <th>Cash</th>
                             <th>Altın</th>
                             <th>Köy ID</th>
+                            <th>İşlem</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -226,10 +227,49 @@
                             <td style="color: #34c38f; font-weight: bold;">💵 {{ p.info.cash }}</td>
                             <td style="color: #f1b44c; font-weight: bold;">🪙 {{ p.info.coins }}</td>
                             <td style="font-family: monospace; font-size: 11px; color: #888;">{{ p.village_id[:8] }}...</td>
+                            <td>
+                                {% if not p.is_admin %}
+                                <form method="POST" action="/admin" onsubmit="return confirm('Bu oyuncuyu ve veritabanındaki tüm köy kayıtlarını silmek istediğine emin misin?');" style="margin: 0;">
+                                    <input type="hidden" name="action" value="delete_user"/>
+                                    <input type="hidden" name="user_id" value="{{ p.id }}"/>
+                                    <button type="submit" style="background: #a93226; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">
+                                        🗑️ Sil
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span style="color: #777; font-size: 11px;">Admin</span>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+
+            <!-- 2. BÖLÜM: TÜM OYUNCULARA MESAJ / DUYURU YAYINLAMA -->
+            <div class="card">
+                <h3 class="card-title">📢 Tüm Oyunculara Duyuru & Mesaj Gönder</h3>
+                <p style="font-size: 13px; color: #a6b0cf;">
+                    Buradan yazacağın duyuru ve mesajlar oyuncuların komuta merkezinde (Profil ekranında) altın sarısı bildirim kutusu olarak görüntülenecektir.
+                </p>
+                <form method="POST" action="/admin">
+                    <input type="hidden" name="action" value="broadcast_message"/>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <input type="text" name="announcement_text" placeholder="Örn: Sunucu bakımı tamamlandı! Herkese iyi oyunlar komutanlar!" required style="flex: 1; background: #1e222d; border: 1px solid #3b445c; border-radius: 4px; padding: 10px 14px; color: #fff; font-size: 14px; outline: none;"/>
+                        <button type="submit" class="btn" style="background: #3b5998; white-space: nowrap;">📢 Duyuruyu Yayınla</button>
+                    </div>
+                </form>
+
+                {% if announcements %}
+                <div style="margin-top: 15px; border-top: 1px solid #3b445c; padding-top: 10px;">
+                    <div style="font-size: 12px; color: #888; margin-bottom: 6px;">Son Yayınlanan Duyurular:</div>
+                    {% for an in announcements %}
+                    <div style="background: #232838; padding: 8px 12px; border-radius: 4px; margin-bottom: 6px; font-size: 13px;">
+                        <b>[{{ an.author }}]:</b> {{ an.message }} <span style="color: #777; font-size: 11px; float: right;">{{ an.created_at }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
 
             <!-- 2. BÖLÜM: BİR OYUNCUYA ÖZEL PARA / LEVEL / ASKER YÜKLEME -->

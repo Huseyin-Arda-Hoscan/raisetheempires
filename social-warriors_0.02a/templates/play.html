@@ -5,14 +5,20 @@
         <title>Social Wars</title>
         <link rel="shortcut icon" href="img/icon.png"/>
         <link rel="icon" type="image/gif" href="img/icon.png"/>
-                <!-- RUFFLE FLASH EMULATOR -->
+                <!-- RUFFLE FLASH EMULATOR (YÜKSEK PERFORMANS & DONANIM HIZLANDIRMA) -->
         <script>
             window.RufflePlayer = window.RufflePlayer || {};
             window.RufflePlayer.config = {
                 "autoplay": "on",
                 "unmuteOverlay": "hidden",
                 "letterbox": "on",
-                "warnOnUnsupportedContent": false
+                "warnOnUnsupportedContent": false,
+                "preferredRenderer": "webgl",
+                "powerPreference": "high-performance",
+                "quality": "medium",
+                "scale": "showAll",
+                "forceScale": false,
+                "openUrlMode": "allow"
             };
         </script>
         <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>

@@ -176,6 +176,19 @@
                 </div>
                 {% endif %}
 
+                {% if announcements %}
+                <div style="background: #fff8e5; border: 1px solid #ffe29a; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px;">
+                    <div style="font-weight: bold; color: #b78103; font-size: 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                        📢 Sunucu Duyurusu:
+                    </div>
+                    {% for a in announcements %}
+                    <div style="font-size: 13px; color: #444; padding: 4px 0; border-bottom: 1px dashed #f0e0b6;">
+                        <b>[{{ a.author }}]:</b> {{ a.message }} <span style="color: #999; font-size: 11px;">({{ a.created_at }})</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <h2 style="margin: 0; color: #1c2a47;">Hoş Geldin, Komutan {{ user.username }}!</h2>
