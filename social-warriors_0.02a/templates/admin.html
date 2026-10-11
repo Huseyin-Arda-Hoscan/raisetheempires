@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="tr">
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Social Wars - Yönetici Paneli (GM Admin)</title>
+        <link rel="shortcut icon" href="img/icon.png"/>
+        <link rel="icon" type="image/gif" href="img/icon.png"/>
+        <style>
+            body {
+                background: #1e222d;
+                color: #e1e4ea;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                margin: 0;
+                padding: 20px;
+            }
+            .container {
+                max-width: 1050px;
+                margin: 0 auto;
+            }
+            .header-bar {
+                background: #2a3042;
+                border: 1px solid #3b445c;
+                border-radius: 8px;
+                padding: 16px 24px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+            .header-title {
+                font-size: 20px;
+                font-weight: bold;
+                color: #f1b44c;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .nav-link {
+                background: #3b445c;
+                color: #fff;
+                text-decoration: none;
+                padding: 8px 14px;
+                border-radius: 5px;
+                font-size: 13px;
+                font-weight: 500;
+                margin-left: 8px;
+            }
+            .nav-link:hover {
+                background: #4f5b7d;
+            }
+            .card {
+                background: #2a3042;
+                border: 1px solid #3b445c;
+                border-radius: 8px;
+                padding: 20px 24px;
+                margin-bottom: 24px;
+            }
+            .card-title {
+                font-size: 16px;
+                font-weight: 600;
+                color: #50a5f1;
+                margin-top: 0;
+                margin-bottom: 15px;
+                border-bottom: 1px solid #3b445c;
+                padding-bottom: 8px;
+            }
+            .alert {
+                padding: 12px 16px;
+                border-radius: 6px;
+                margin-bottom: 20px;
+                font-size: 14px;
+            }
+            .alert-success {
+                background: #1b4b36;
+                color: #34c38f;
+                border: 1px solid #287252;
+            }
+            .alert-danger {
+                background: #4d2325;
+                color: #f46a6a;
+                border: 1px solid #753336;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+                font-size: 13px;
+            }
+            th, td {
+                padding: 10px 12px;
+                border-bottom: 1px solid #363e54;
+                text-align: left;
+            }
+            th {
+                background: #232838;
+                color: #a6b0cf;
+            }
+            tr:hover {
+                background: #32394e;
+            }
+            .form-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+                margin-bottom: 15px;
+            }
+            .form-group {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+            .form-group label {
+                font-size: 12px;
+                color: #a6b0cf;
+                font-weight: bold;
+            }
+            .form-group input, .form-group select {
+                background: #1e222d;
+                border: 1px solid #3b445c;
+                border-radius: 4px;
+                color: #fff;
+                padding: 8px 10px;
+                font-size: 13px;
+                outline: none;
+            }
+            .form-group input:focus, .form-group select:focus {
+                border-color: #50a5f1;
+            }
+            .btn {
+                background: #50a5f1;
+                color: #fff;
+                border: none;
+                border-radius: 5px;
+                padding: 10px 18px;
+                font-size: 13px;
+                font-weight: bold;
+                cursor: pointer;
+            }
+            .btn:hover {
+                background: #3994e8;
+            }
+            .btn-warning {
+                background: #f1b44c;
+                color: #212529;
+            }
+            .btn-warning:hover {
+                background: #e09d26;
+            }
+            .badge {
+                padding: 3px 7px;
+                border-radius: 4px;
+                font-size: 11px;
+                font-weight: bold;
+            }
+            .badge-admin {
+                background: #f1b44c;
+                color: #212529;
+            }
+            .badge-user {
+                background: #3b445c;
+                color: #fff;
+            }
+            .guide-box {
+                background: #232838;
+                border-left: 4px solid #50a5f1;
+                padding: 12px 16px;
+                border-radius: 0 6px 6px 0;
+                font-size: 13px;
+                margin-top: 15px;
+                color: #a6b0cf;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header-bar">
+                <div class="header-title">
+                    🛡️ Social Wars Game Master (Admin) Paneli
+                </div>
+                <div>
+                    <a href="/profile" class="nav-link">Profilim</a>
+                    <a href="/play.html" class="nav-link">Oyuna Dön</a>
+                    <a href="/logout" class="nav-link" style="background: #a93226;">Çıkış</a>
+                </div>
+            </div>
+
+            {% if msg %}
+            <div class="alert alert-{{ msg_type }}">
+                {{ msg }}
+            </div>
+            {% endif %}
+
+            <!-- 1. BÖLÜM: TÜM OYUNCULARIN LİSTESİ -->
+            <div class="card">
+                <h3 class="card-title">👥 Kayıtlı Oyuncular ve İmparatorluklar</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Komutan Adı</th>
+                            <th>E-posta</th>
+                            <th>Yetki</th>
+                            <th>Level</th>
+                            <th>XP</th>
+                            <th>Cash</th>
+                            <th>Altın</th>
+                            <th>Köy ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in players_data %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td><b>{{ p.username }}</b></td>
+                            <td>{{ p.email }}</td>
+                            <td>
+                                {% if p.is_admin %}
+                                <span class="badge badge-admin">YÖNETİCİ</span>
+                                {% else %}
+                                <span class="badge badge-user">OYUNCU</span>
+                                {% endif %}
+                            </td>
+                            <td>⭐ {{ p.info.level }}</td>
+                            <td>{{ p.info.xp }}</td>
+                            <td style="color: #34c38f; font-weight: bold;">💵 {{ p.info.cash }}</td>
+                            <td style="color: #f1b44c; font-weight: bold;">🪙 {{ p.info.coins }}</td>
+                            <td style="font-family: monospace; font-size: 11px; color: #888;">{{ p.village_id[:8] }}...</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 2. BÖLÜM: BİR OYUNCUYA ÖZEL PARA / LEVEL / ASKER YÜKLEME -->
+            <div class="card">
+                <h3 class="card-title">🎁 Belirli Bir Oyuncuya Kaynak & Seviye & Asker Yükle</h3>
+                <form method="POST" action="/admin">
+                    <input type="hidden" name="action" value="modify_player"/>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="village_id">Hedef Oyuncu:</label>
+                            <select id="village_id" name="village_id" required>
+                                {% for p in players_data %}
+                                <option value="{{ p.village_id }}">{{ p.username }} ({{ p.email }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cash">Social Cash (Nakit):</label>
+                            <input type="number" id="cash" name="cash" placeholder="Örn: 10000"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="gold">Altın (Coins):</label>
+                            <input type="number" id="gold" name="gold" placeholder="Örn: 500000"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="level">Seviye (Level):</label>
+                            <input type="number" id="level" name="level" placeholder="Örn: 50"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="wood">Odun (Wood):</label>
+                            <input type="number" id="wood" name="wood" placeholder="Örn: 200000"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="steel">Çelik (Steel):</label>
+                            <input type="number" id="steel" name="steel" placeholder="Örn: 200000"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="oil">Petrol (Oil):</label>
+                            <input type="number" id="oil" name="oil" placeholder="Örn: 200000"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="item_id">Özel Birim / Asker Hediye Et (Item ID):</label>
+                            <input type="number" id="item_id" name="item_id" placeholder="Örn: 302 (Super Tank)"/>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn">Değişiklikleri ve Hediyeleri Uygula</button>
+                </form>
+            </div>
+
+            <!-- 3. BÖLÜM: TOPLU ETKİNLİK (TÜM SUNUCUYA HEDİYE DAĞIT) -->
+            <div class="card">
+                <h3 class="card-title">🎉 Sunucu Çapında Etkinlik (Herkese Hediye Dağıt)</h3>
+                <p style="font-size: 13px; color: #a6b0cf;">
+                    Buradan girdiğin miktarlar sunucudaki <b>tüm kayıtlı oyuncuların</b> mevcut hesaplarına anında eklenir!
+                </p>
+                <form method="POST" action="/admin">
+                    <input type="hidden" name="action" value="server_event"/>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="event_cash">Herkese Verilecek Cash:</label>
+                            <input type="number" id="event_cash" name="event_cash" value="1000"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="event_gold">Herkese Verilecek Altın:</label>
+                            <input type="number" id="event_gold" name="event_gold" value="100000"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="event_wood">Herkese Verilecek Odun:</label>
+                            <input type="number" id="event_wood" name="event_wood" value="50000"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="event_steel">Herkese Verilecek Çelik:</label>
+                            <input type="number" id="event_steel" name="event_steel" value="50000"/>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning">🚀 Sunucu Etkinliğini Başlat ve Dağıt</button>
+                </form>
+
+                <div class="guide-box">
+                    💡 <b>Popüler Birim / Robot ID Rehberi:</b><br>
+                    • <b>Super Tank:</b> 302 &nbsp;|&nbsp; • <b>Apocalyptic Mech:</b> 460 &nbsp;|&nbsp; • <b>Nuclear Robot:</b> 277 &nbsp;|&nbsp; • <b>Dragon Copter:</b> 346 &nbsp;|&nbsp; • <b>Alien Hunter:</b> 410<br>
+                    Bu ID'leri yukarıdaki birim hediyesi kutusuna yazarak arkadaşlarının envanterine doğrudan ekleyebilirsin!
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

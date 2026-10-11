@@ -4,7 +4,7 @@ services:
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn -w 2 -b 0.0.0.0:$PORT server:app
+    startCommand: gunicorn -w 1 --threads 4 -b 0.0.0.0:$PORT server:app
     envVars:
       - key: SECRET_KEY
         generateValue: true

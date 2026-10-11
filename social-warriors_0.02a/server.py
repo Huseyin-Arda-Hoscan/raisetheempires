@@ -69,10 +69,11 @@ def login():
             session['email'] = user['email']
             session['username'] = user['username']
             session['USERID'] = user['village_id']
+            session['is_admin'] = user.get('is_admin', 0)
             session['GAMEVERSION'] = 'Basesec_1.5.4.swf'
             return redirect('/play.html')
         else:
-            error = 'Geçersiz e-posta veya şifre!'
+            error = 'Geçersiz kullanıcı adı/e-posta veya şifre!'
             
     return render_template('login.html', error=error, version=version_name)
 
@@ -105,6 +106,7 @@ def register():
                 session['email'] = user['email']
                 session['username'] = user['username']
                 session['USERID'] = user['village_id']
+                session['is_admin'] = user.get('is_admin', 0)
                 session['GAMEVERSION'] = 'Basesec_1.5.4.swf'
                 return redirect('/play.html')
             else:
@@ -176,6 +178,64 @@ def profile():
     all_players = get_all_users()
     
     return render_template('profile.html', user=user, info=info, all_players=all_players, msg=msg, msg_type=msg_type, version=version_name)
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    if 'user_id' not in session:
+        return redirect('/login')
+    user = get_user_by_id(session['user_id'])
+    if not user or not user.get('is_admin'):
+        return redirect('/profile')
+        
+    msg = None
+    msg_type = 'success'
+    
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'modify_player':
+            vid = request.form.get('village_id')
+            cash = request.form.get('cash') or None
+            gold = request.form.get('gold') or None
+            level = request.form.get('level') or None
+            wood = request.form.get('wood') or None
+            steel = request.form.get('steel') or None
+            oil = request.form.get('oil') or None
+            item_id = request.form.get('item_id')
+            
+            from sessions import modify_player_resources, add_item_to_player_store
+            modify_player_resources(vid, cash=cash, gold=gold, wood=wood, steel=steel, oil=oil, level=level)
+            if item_id:
+                add_item_to_player_store(vid, item_id, 1)
+            msg = 'Oyuncunun kaynakları, seviyesi ve hediyeleri başarıyla güncellendi!'
+            msg_type = 'success'
+            
+        elif action == 'server_event':
+            e_cash = int(request.form.get('event_cash') or 0)
+            e_gold = int(request.form.get('event_gold') or 0)
+            e_wood = int(request.form.get('event_wood') or 0)
+            e_steel = int(request.form.get('event_steel') or 0)
+            
+            from sessions import gift_all_players
+            c = gift_all_players(cash=e_cash, gold=e_gold, wood=e_wood, steel=e_steel)
+            msg = f'Sunucu Etkinliği Başlatıldı! {c} oyuncuya hediyeler dağıtıldı!'
+            msg_type = 'success'
+
+    all_users = get_all_users()
+    players_data = []
+    for u in all_users:
+        u_info = save_info(u['village_id']) or {
+            'level': 1, 'xp': 0, 'cash': 0, 'coins': 0
+        }
+        players_data.append({
+            'id': u['id'],
+            'username': u['username'],
+            'email': u['email'],
+            'is_admin': u.get('is_admin', 0),
+            'village_id': u['village_id'],
+            'info': u_info
+        })
+        
+    return render_template('admin.html', players_data=players_data, msg=msg, msg_type=msg_type, version=version_name)
 
 @app.route('/play.html')
 def play():

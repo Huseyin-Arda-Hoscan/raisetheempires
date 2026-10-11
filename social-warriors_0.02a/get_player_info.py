@@ -6,15 +6,18 @@ from engine import timestamp_now, reset_stuff
 
 def get_player_info(USERID):
     ts_now = timestamp_now()
-    session(USERID)['playerInfo']['last_logged_in'] = ts_now
-    reset_stuff(session(USERID))
+    p_session = session(USERID)
+    if not p_session:
+        return {'result': 'error', 'error': 'session_not_found'}
+    p_session['playerInfo']['last_logged_in'] = ts_now
+    reset_stuff(p_session)
     player_info = {
         'result': 'ok',
         'processed_errors': 0,
         'timestamp': ts_now,
-        'playerInfo': session(USERID)['playerInfo'],
-        'map': session(USERID)['maps'][0],
-        'privateState': session(USERID)['privateState'],
+        'playerInfo': p_session['playerInfo'],
+        'map': p_session['maps'][0],
+        'privateState': p_session['privateState'],
         'neighbors': neighbors(USERID) }
     return player_info
 
@@ -24,18 +27,16 @@ def get_neighbor_info(userid, map_number):
     if not _session:
         print(f'''USERID {userid} not found.''')
         return ''
-    if None not in _session and 'maps' not in _session or 'privateState' not in _session:
+    if 'maps' not in _session or 'privateState' not in _session:
         print(f'''USERID {userid} not found.''')
         return ''
-    _map_number = None
-    if not map_number:
-        _map_number = 0
+    _map_number = 0 if not map_number else map_number
     neighbor_info = {
         'result': 'ok',
         'processed_errors': 0,
         'timestamp': timestamp_now(),
-        'playerInfo': neighbor_session(userid)['playerInfo'],
-        'map': neighbor_session(userid)['maps'][_map_number],
-        'privateState': neighbor_session(userid)['privateState'] }
+        'playerInfo': _session['playerInfo'],
+        'map': _session['maps'][_map_number],
+        'privateState': _session['privateState'] }
     return neighbor_info
 

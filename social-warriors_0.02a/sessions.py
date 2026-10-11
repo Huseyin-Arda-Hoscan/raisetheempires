@@ -65,6 +65,17 @@ def load_saves():
         if modified:
             save_session(USERID)
 
+    # 2. Veritabanindan (Supabase / Postgres / SQLite) kayitlari yukle
+    try:
+        from database import db_load_all_villages
+        db_villages = db_load_all_villages()
+        for vid, save in db_villages.items():
+            if is_valid_village(save):
+                __saves[str(vid)] = save
+                print(f" * Loaded DB SAVE: {vid}")
+    except Exception as e:
+        print(f" * DB Save Load Note: {e}")
+
 def load_static_villages():
     global __villages
     __villages = {}
@@ -173,10 +184,54 @@ def all_saves_info():
     return saves_info
 
 def session(USERID=None):
-    assert isinstance(USERID, str)
+    if not USERID or not isinstance(USERID, str):
+        return None
     if USERID in __saves:
         return __saves[USERID]
-    return None
+        
+    # 1. Diskten yuklemeyi dene
+    for fname in [f"{USERID}.save.json", f"{USERID}.json"]:
+        save_file = os.path.join(SAVES_DIR, fname)
+        if os.path.exists(save_file):
+            try:
+                with open(save_file, 'r', encoding='utf-8') as f:
+                    s = json.load(f)
+                    if is_valid_village(s):
+                        __saves[USERID] = s
+                        return s
+            except Exception:
+                pass
+
+    # 2. Veritabanindan (Supabase / Postgres) yuklemeyi dene
+    try:
+        from database import db_load_village
+        db_s = db_load_village(USERID)
+        if db_s and is_valid_village(db_s):
+            __saves[USERID] = db_s
+            return db_s
+    except Exception:
+        pass
+                
+    # 3. Yoksa yeni koy olustur (ASLA None donup oyunu cokertme)
+    try:
+        village = copy.deepcopy(__initial_village)
+        village['version'] = None
+        village['playerInfo']['pid'] = USERID
+        village['playerInfo']['name'] = 'Commander'
+        village['playerInfo']['cash'] = 500
+        village['maps'][0]['gold'] = 50000
+        village['maps'][0]['wood'] = 50000
+        village['maps'][0]['steel'] = 25000
+        village['maps'][0]['oil'] = 25000
+        village['maps'][0]['timestamp'] = timestamp_now()
+        village['privateState']['timeStampDartsReset'] = 0
+        migrate_loaded_save(village)
+        __saves[USERID] = village
+        save_session(USERID)
+        return village
+    except Exception as e:
+        print(f"Error fallback village for {USERID}: {e}")
+        return None
 
 def neighbor_session(USERID=None):
     assert isinstance(USERID, str)
@@ -250,4 +305,64 @@ def save_session(USERID=None):
     save_path = os.path.join(SAVES_DIR, file)
     with open(save_path, 'w', encoding='utf-8') as f:
         json.dump(village, f, indent=4)
+        
+    # Supabase / DB'ye de kalici olarak yaz
+    try:
+        from database import db_save_village
+        db_save_village(USERID, village)
+    except Exception as e:
+        print(f" * DB Save Note: {e}")
+        
     print('Done.')
+
+def modify_player_resources(village_id, cash=None, gold=None, wood=None, steel=None, oil=None, level=None, xp=None):
+    vill = session(str(village_id))
+    if not vill:
+        return False
+    if cash is not None:
+        vill['playerInfo']['cash'] = int(cash)
+    if gold is not None:
+        vill['maps'][0]['gold'] = int(gold)
+    if wood is not None:
+        vill['maps'][0]['wood'] = int(wood)
+    if steel is not None:
+        vill['maps'][0]['steel'] = int(steel)
+    if oil is not None:
+        vill['maps'][0]['oil'] = int(oil)
+    if level is not None:
+        vill['maps'][0]['level'] = int(level)
+    if xp is not None:
+        vill['maps'][0]['xp'] = int(xp)
+    save_session(str(village_id))
+    return True
+
+def gift_all_players(cash=0, gold=0, wood=0, steel=0, oil=0):
+    count = 0
+    for uid in __saves:
+        vill = __saves[uid]
+        if cash:
+            vill['playerInfo']['cash'] = vill['playerInfo'].get('cash', 0) + int(cash)
+        if gold:
+            vill['maps'][0]['gold'] = vill['maps'][0].get('gold', 0) + int(gold)
+        if wood:
+            vill['maps'][0]['wood'] = vill['maps'][0].get('wood', 0) + int(wood)
+        if steel:
+            vill['maps'][0]['steel'] = vill['maps'][0].get('steel', 0) + int(steel)
+        if oil:
+            vill['maps'][0]['oil'] = vill['maps'][0].get('oil', 0) + int(oil)
+        save_session(uid)
+        count += 1
+    return count
+
+def add_item_to_player_store(village_id, item_id, quantity=1):
+    vill = session(str(village_id))
+    if not vill:
+        return False
+    from engine import add_store_item, bought_unit_add
+    item_id = int(item_id)
+    quantity = int(quantity)
+    add_store_item(vill['maps'][0], item_id, quantity)
+    bought_unit_add(vill, item_id)
+    save_session(str(village_id))
+    return True
+
