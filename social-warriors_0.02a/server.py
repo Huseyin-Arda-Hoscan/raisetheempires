@@ -248,32 +248,52 @@ def admin():
                     msg = 'Hesap silinirken bir hata oluştu veya bulunamadı.'
                     msg_type = 'danger'
 
-        elif action == 'broadcast_message':
-            announcement_text = request.form.get('announcement_text', '').strip()
-            if announcement_text:
-                from database import add_announcement
-                add_announcement(announcement_text, author=user['username'])
-                msg = f'Duyuru / Mesaj tüm oyunculara başarıyla yayınlandı!'
+        elif action == 'reset_database':
+            # Veritabanindaki tum test oyuncularini ve koylerini sifirla (zelyusking haric)
+            try:
+                from database import get_connection, is_postgres
+                conn = get_connection()
+                cursor = conn.cursor()
+                if is_postgres():
+                    cursor.execute("DELETE FROM users WHERE LOWER(username) != 'zelyusking'")
+                    cursor.execute("DELETE FROM village_saves WHERE village_id != %s", (str(user['village_id']),))
+                else:
+                    cursor.execute("DELETE FROM users WHERE LOWER(username) != 'zelyusking'")
+                    cursor.execute("DELETE FROM village_saves WHERE village_id != ?", (str(user['village_id']),))
+                conn.commit()
+                conn.close()
+                from sessions import __saves
+                to_delete = [k for k in __saves if k != str(user['village_id'])]
+                for k in to_delete:
+                    del __saves[k]
+                msg = 'Veritabanı sıfırlandı! zelyusking hariç tüm test hesapları ve köyleri temizlendi!'
                 msg_type = 'success'
+            except Exception as e:
+                msg = f'Sıfırlama hatası: {e}'
+                msg_type = 'danger'
 
-    all_users = get_all_users()
-    players_data = []
-    for u in all_users:
-        u_info = save_info(u['village_id']) or {
-            'level': 1, 'xp': 0, 'cash': 0, 'coins': 0
-        }
-        players_data.append({
-            'id': u['id'],
-            'username': u['username'],
-            'email': u['email'],
-            'is_admin': u.get('is_admin', 0),
-            'village_id': u['village_id'],
-            'info': u_info
-        })
-        
-    from database import get_latest_announcements
-    announcements = get_latest_announcements(limit=5)
-    return render_template('admin.html', players_data=players_data, announcements=announcements, msg=msg, msg_type=msg_type, version=version_name)
+    try:
+        all_users = get_all_users()
+        players_data = []
+        for u in all_users:
+            u_info = save_info(u['village_id']) or {
+                'level': 1, 'xp': 0, 'cash': 0, 'coins': 0
+            }
+            players_data.append({
+                'id': u['id'],
+                'username': u['username'],
+                'email': u['email'],
+                'is_admin': u.get('is_admin', 0),
+                'village_id': u['village_id'],
+                'info': u_info
+            })
+            
+        from database import get_latest_announcements
+        announcements = get_latest_announcements(limit=5)
+        return render_template('admin.html', players_data=players_data, announcements=announcements, msg=msg, msg_type=msg_type, version=version_name)
+    except Exception as e:
+        print(f"[ADMIN ERROR] {e}")
+        return render_template('admin.html', players_data=[], announcements=[], msg=f'Hata: {e}', msg_type='danger', version=version_name)
 
 @app.route('/play.html')
 def play():

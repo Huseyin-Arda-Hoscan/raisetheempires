@@ -178,7 +178,13 @@
                 <div class="header-title">
                     🛡️ Social Wars Game Master (Admin) Paneli
                 </div>
-                <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <form method="POST" action="/admin" onsubmit="return confirm('DİKKAT: zelyusking hariç tüm oyuncu hesapları ve köyleri sıfırlanacak! Emin misiniz?');" style="margin: 0; display: inline;">
+                        <input type="hidden" name="action" value="reset_database"/>
+                        <button type="submit" class="nav-link" style="background: #c0392b; border: none; cursor: pointer;">
+                            ⚠️ Tüm Veritabanını Sıfırla
+                        </button>
+                    </form>
                     <a href="/profile" class="nav-link">Profilim</a>
                     <a href="/play.html" class="nav-link">Oyuna Dön</a>
                     <a href="/logout" class="nav-link" style="background: #a93226;">Çıkış</a>
