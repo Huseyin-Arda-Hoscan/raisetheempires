@@ -1,22 +1,22 @@
 {
-	"playerInfo": {
-		"pid": "Scarlet",
-		"name": "Scarlet",
-		"pic": "https://github.com/AcidCaos/socialwarriors/blob/main/templates/avatars/scarlet.png?raw=true",
-		"cash": 42,
-		"completed_tutorial": 1,
-		"default_map": 0,
-		"map_names": [
-			"Scarlet"
-		],
-		"map_sizes": [
-			0
-		],
-		"world_id": null,
-		"sp_ref_uid": 1000,
-		"sp_ref_cat_install": "ts",
-		"last_logged_in": 1688927892
-	},
+    "playerInfo": {
+        "pid": "Scarlet",
+        "name": "Scarlet",
+        "pic": "/avatars/scarlet.png",
+        "cash": 42,
+        "completed_tutorial": 1,
+        "default_map": 0,
+        "map_names": [
+            "Scarlet"
+        ],
+        "map_sizes": [
+            0
+        ],
+        "world_id": null,
+        "sp_ref_uid": 1000,
+        "sp_ref_cat_install": "ts",
+        "last_logged_in": 1688927892
+    },
     "maps": [
         {
             "id": 0,

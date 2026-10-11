@@ -139,12 +139,12 @@ def create_user_village(empire_name='Commander'):
     vill = session(USERID)
     if vill:
         vill['playerInfo']['name'] = str(empire_name)
-        # Baslangic kaynaklari (arkadaslarla oynamayi hizlandirmak icin makul baslangic)
+        # Baslangic kaynaklari (Egitim gorevinde depo doldu hatasi vermemesi icin limit dahilinde)
         vill['playerInfo']['cash'] = 500
-        vill['maps'][0]['gold'] = 50000
-        vill['maps'][0]['wood'] = 50000
-        vill['maps'][0]['steel'] = 25000
-        vill['maps'][0]['oil'] = 25000
+        vill['maps'][0]['gold'] = 1000
+        vill['maps'][0]['wood'] = 200
+        vill['maps'][0]['steel'] = 200
+        vill['maps'][0]['oil'] = 200
         save_session(USERID)
     return USERID
 
@@ -219,10 +219,10 @@ def session(USERID=None):
         village['playerInfo']['pid'] = USERID
         village['playerInfo']['name'] = 'Commander'
         village['playerInfo']['cash'] = 500
-        village['maps'][0]['gold'] = 50000
-        village['maps'][0]['wood'] = 50000
-        village['maps'][0]['steel'] = 25000
-        village['maps'][0]['oil'] = 25000
+        village['maps'][0]['gold'] = 1000
+        village['maps'][0]['wood'] = 200
+        village['maps'][0]['steel'] = 200
+        village['maps'][0]['oil'] = 200
         village['maps'][0]['timestamp'] = timestamp_now()
         village['privateState']['timeStampDartsReset'] = 0
         migrate_loaded_save(village)

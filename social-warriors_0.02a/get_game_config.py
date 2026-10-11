@@ -74,8 +74,21 @@ modify_game_config()
 print(' [+] Cleaning config duplicates...')
 remove_duplicate_items()
 
+def clean_config_limits():
+    globals_dict = __game_config.get('globals', {})
+    depot_limits = globals_dict.get('DEPOT_LIMITS')
+    if isinstance(depot_limits, str):
+        cleaned = depot_limits.strip().rstrip(';')
+        try:
+            globals_dict['DEPOT_LIMITS'] = json.loads(cleaned)
+        except Exception:
+            globals_dict['DEPOT_LIMITS'] = {"g": [1, 7, 17, 27], "o": [1, 8, 18, 28], "w": [1, 5, 15, 25], "s": [1, 6, 16, 26]}
+            
+clean_config_limits()
+
 def get_game_config() -> dict:
     make_dynamic(__game_config)
+    clean_config_limits()
     return __game_config
 
 def game_config() -> dict:

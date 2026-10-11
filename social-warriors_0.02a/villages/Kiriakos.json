@@ -1,22 +1,22 @@
 {
-	"playerInfo": {
-		"pid": "Kiriakos",
-		"name": "Kiriakos 96d",
-		"pic": "https://github.com/AcidCaos/socialwarriors/blob/main/templates/avatars/kiriakos.png?raw=true",
-		"cash": 27,
-		"completed_tutorial": 1,
-		"default_map": 0,
-		"map_names": [
-			"Empire"
-		],
-		"map_sizes": [
-			0
-		],
-		"world_id": null,
-		"sp_ref_uid": 1000,
-		"sp_ref_cat_install": "ts",
-		"last_logged_in": 1705940133
-	},
+    "playerInfo": {
+        "pid": "Kiriakos",
+        "name": "Kiriakos 96d",
+        "pic": "/avatars/kiriakos.png",
+        "cash": 27,
+        "completed_tutorial": 1,
+        "default_map": 0,
+        "map_names": [
+            "Empire"
+        ],
+        "map_sizes": [
+            0
+        ],
+        "world_id": null,
+        "sp_ref_uid": 1000,
+        "sp_ref_cat_install": "ts",
+        "last_logged_in": 1705940133
+    },
     "maps": [
         {
             "id": 0,
