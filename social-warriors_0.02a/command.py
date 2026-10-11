@@ -44,14 +44,14 @@ def do_command(USERID, map_id, cmd, args, resources_changed):
         map_add_item(map, item_index, item_id, x, y, orientation, playerID, **('orientation', 'player'))
         print('Add', str(get_name_from_item_id(item_id)), 'at', f'''({x},{y})''')
         return None
-    if None == 'complete_tutorial':
+    elif cmd == 'complete_tutorial':
         tutorial_step = args[0]
         print('Tutorial step', tutorial_step, 'reached.')
         if tutorial_step >= 25 or tutorial_step == 15:
             print('Tutorial COMPLETED!')
             save['playerInfo']['completed_tutorial'] = 1
         return None
-    if None == 'set_goals':
+    elif cmd == 'set_goals':
         goal_id = args[0]
         progress = json.loads(args[1])
         set_goals(save['privateState'], goal_id, progress)
@@ -86,7 +86,7 @@ def do_command(USERID, map_id, cmd, args, resources_changed):
         if not item:
             print('Error: item not found.')
             return None
-        item[1] = None
+        item[1] = x
         item[2] = y
         print('Move', str(get_name_from_item_id(item[0])), 'to', f'''({x},{y})''')
     elif cmd == 'collect':
@@ -95,7 +95,7 @@ def do_command(USERID, map_id, cmd, args, resources_changed):
         if not item:
             print('Error: item not found.')
             return None
-        item[3] = None
+        item[3] = time_now
         print('Collect', str(get_name_from_item_id(item[0])))
     elif cmd == 'sell':
         item_index = args[0]
