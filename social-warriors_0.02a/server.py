@@ -175,6 +175,7 @@ def profile():
         'coins': 0
     }
     
+    all_players = get_all_users()
     from database import get_latest_announcements
     announcements = get_latest_announcements(limit=3)
     return render_template('profile.html', user=user, info=info, all_players=all_players, announcements=announcements, msg=msg, msg_type=msg_type, version=version_name)
@@ -249,24 +250,29 @@ def admin():
                     msg_type = 'danger'
 
         elif action == 'reset_database':
-            # Veritabanindaki tum test oyuncularini ve koylerini sifirla (zelyusking haric)
+            # Veritabanindaki tum oyunculari ve koyleri sifirla, admin icin tertemiz koy olustur
             try:
                 from database import get_connection, is_postgres
+                from sessions import new_village, __saves
                 conn = get_connection()
                 cursor = conn.cursor()
+                new_admin_vid = new_village()
                 if is_postgres():
                     cursor.execute("DELETE FROM users WHERE LOWER(username) != 'zelyusking'")
-                    cursor.execute("DELETE FROM village_saves WHERE village_id != %s", (str(user['village_id']),))
+                    cursor.execute("DELETE FROM village_saves")
+                    cursor.execute("UPDATE users SET village_id = %s WHERE id = %s", (new_admin_vid, user['id']))
                 else:
                     cursor.execute("DELETE FROM users WHERE LOWER(username) != 'zelyusking'")
-                    cursor.execute("DELETE FROM village_saves WHERE village_id != ?", (str(user['village_id']),))
+                    cursor.execute("DELETE FROM village_saves")
+                    cursor.execute("UPDATE users SET village_id = ? WHERE id = ?", (new_admin_vid, user['id']))
                 conn.commit()
                 conn.close()
-                from sessions import __saves
-                to_delete = [k for k in __saves if k != str(user['village_id'])]
-                for k in to_delete:
-                    del __saves[k]
-                msg = 'Veritabanı sıfırlandı! zelyusking hariç tüm test hesapları ve köyleri temizlendi!'
+                session['USERID'] = new_admin_vid
+                __saves.clear()
+                # Admin icin yeni koy oturumunu yukle
+                from sessions import session as load_v
+                load_v(new_admin_vid)
+                msg = 'Veritabanı sıfırlandı! Tüm test hesapları silindi ve Admin (zelyusking) için yepyeni, sıfır bir köy oluşturuldu!'
                 msg_type = 'success'
             except Exception as e:
                 msg = f'Sıfırlama hatası: {e}'

@@ -52,16 +52,22 @@ def init_db():
         ''')
         conn.commit()
         
-        # zelyusking kullanicisi
-        cursor.execute('SELECT id FROM users WHERE LOWER(username) = %s OR LOWER(email) = %s', ('zelyusking', 'zelyusking@admin.local'))
+        # zelyusking kullanicisi ve koyu
+        cursor.execute('SELECT id, village_id FROM users WHERE LOWER(username) = %s OR LOWER(email) = %s', ('zelyusking', 'zelyusking@admin.local'))
         row = cursor.fetchone()
         admin_hash = generate_password_hash('Ardas741')
         
+        from sessions import session as get_v_session, save_session as sync_v_session, new_village
         if row:
+            admin_id, admin_vid = row[0], str(row[1])
             cursor.execute('UPDATE users SET username = %s, password_hash = %s, is_admin = 1 WHERE id = %s',
-                           ('zelyusking', admin_hash, row[0]))
+                           ('zelyusking', admin_hash, admin_id))
+            # Eger eski koy verisi bozuksa veya yoksa temiz bir koy ata
+            v_check = get_v_session(admin_vid)
+            if not v_check or not v_check.get('maps'):
+                new_vid = new_village()
+                cursor.execute('UPDATE users SET village_id = %s WHERE id = %s', (new_vid, admin_id))
         else:
-            from sessions import new_village
             try:
                 vid = new_village()
             except Exception:
@@ -106,11 +112,17 @@ def init_db():
         cursor.execute('SELECT * FROM users WHERE LOWER(username) = ? OR LOWER(email) = ?', ('zelyusking', 'zelyusking@admin.local'))
         row = cursor.fetchone()
         admin_hash = generate_password_hash('Ardas741')
+        from sessions import session as get_v_session, new_village
         if row:
+            admin_id = row['id']
+            admin_vid = str(row['village_id'])
             cursor.execute('UPDATE users SET username = ?, password_hash = ?, is_admin = 1 WHERE id = ?',
-                           ('zelyusking', admin_hash, row['id']))
+                           ('zelyusking', admin_hash, admin_id))
+            v_check = get_v_session(admin_vid)
+            if not v_check or not v_check.get('maps'):
+                new_vid = new_village()
+                cursor.execute('UPDATE users SET village_id = ? WHERE id = ?', (new_vid, admin_id))
         else:
-            from sessions import new_village
             try:
                 vid = new_village()
             except Exception:
