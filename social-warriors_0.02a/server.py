@@ -397,10 +397,14 @@ def get_player_info_response():
         return jsonify({'result': 'error', 'error': 'no_userid'}), 200
     USERID = str(USERID)
     
-    if user is None or user == '' or user == '0' or str(user) == USERID:
+    if user is None or user == '' or str(user) == USERID:
         print(f'[PLAYER INFO] Loading home base for USERID {USERID}.')
         return jsonify(get_player_info(USERID))
         
+    if str(user) == '0':
+        print(f'[ISLAND] USERID {USERID} loading Island 0 (Neutral).')
+        return jsonify(get_neighbor_info('Neutral', map_idx))
+
     if user in ('100000030', '100000031'):
         print(f'[VISIT] USERID {USERID} visiting General Mike ({user}).')
         return jsonify(get_neighbor_info('100000030', map_idx))
@@ -412,6 +416,39 @@ def get_player_info_response():
         
     print(f'[VISIT] USERID {USERID} visiting user: {user}.')
     return jsonify(get_neighbor_info(user, map_idx))
+
+@app.route(__DYNAMIC_ROOT + '/get_user_world.php', methods=['GET', 'POST'])
+def get_user_world_response():
+    USERID = request.values.get('USERID') or request.values.get('user_id') or session.get('USERID')
+    user = request.values.get('user') or request.values.get('id') or '0'
+    map_idx = int(request.values.get('map', 0)) if 'map' in request.values else 0
+    print(f'[USER WORLD] USERID {USERID} loading world/island {user}')
+    if str(user) == '0':
+        return jsonify(get_neighbor_info('Neutral', map_idx))
+    info = get_neighbor_info(str(user), map_idx)
+    if not info or info.get('result') != 'ok':
+        info = get_neighbor_info('Neutral', map_idx)
+    return jsonify(info)
+
+@app.route(__DYNAMIC_ROOT + '/get_continent.php', methods=['GET', 'POST'])
+def get_continent_response():
+    return jsonify({'result': 'ok', 'continent': 0})
+
+@app.route(__DYNAMIC_ROOT + '/get_continent_ranking.php', methods=['GET', 'POST'])
+def get_continent_ranking_response():
+    return jsonify({'result': 'ok', 'ranking': []})
+
+@app.route(__DYNAMIC_ROOT + '/get_public_player_info.php', methods=['GET', 'POST'])
+def get_public_player_info_response():
+    user = request.values.get('user') or request.values.get('USERID') or 'Neutral'
+    info = get_neighbor_info(str(user), 0)
+    if not info or info.get('result') != 'ok':
+        info = get_neighbor_info('Neutral', 0)
+    return jsonify(info)
+
+@app.route(__DYNAMIC_ROOT + '/clean_assaults.php', methods=['GET', 'POST'])
+def clean_assaults_response():
+    return jsonify({'result': 'ok'})
 
 @app.route(__DYNAMIC_ROOT + '/sync_error_track.php', methods=['POST'])
 def sync_error_track_response():

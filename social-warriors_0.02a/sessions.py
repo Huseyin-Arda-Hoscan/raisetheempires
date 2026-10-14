@@ -230,13 +230,17 @@ def session(USERID=None):
         return None
 
 def neighbor_session(USERID=None):
-    assert isinstance(USERID, str)
+    if USERID is None:
+        return None
+    USERID = str(USERID)
     if USERID in __saves:
         return __saves[USERID]
     if USERID in __quests:
         return __quests[USERID]
     if USERID in __villages:
         return __villages[USERID]
+    if USERID == '0' and 'Neutral' in __villages:
+        return __villages['Neutral']
     return None
 
 def fb_friends_str(USERID=None):

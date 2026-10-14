@@ -23,20 +23,28 @@ def get_player_info(USERID):
 
 
 def get_neighbor_info(userid, map_number):
+    userid = str(userid) if userid is not None else '0'
     _session = neighbor_session(userid)
+    if not _session and userid in ('0', 'Neutral'):
+        _session = neighbor_session('Neutral')
     if not _session:
-        print(f'''USERID {userid} not found.''')
-        return ''
-    if 'maps' not in _session or 'privateState' not in _session:
-        print(f'''USERID {userid} not found.''')
-        return ''
-    _map_number = 0 if not map_number else map_number
+        print(f'USERID {userid} not found, checking fallback.')
+        _session = neighbor_session('Neutral')
+    if not _session or 'maps' not in _session:
+        print(f'USERID {userid} could not be loaded.')
+        return {'result': 'error', 'error': 'not_found'}
+        
+    _map_number = 0 if not map_number else int(map_number)
+    if _map_number >= len(_session['maps']):
+        _map_number = 0
+        
     neighbor_info = {
         'result': 'ok',
         'processed_errors': 0,
         'timestamp': timestamp_now(),
         'playerInfo': _session['playerInfo'],
         'map': _session['maps'][_map_number],
-        'privateState': _session['privateState'] }
+        'privateState': _session.get('privateState', {})
+    }
     return neighbor_info
 
