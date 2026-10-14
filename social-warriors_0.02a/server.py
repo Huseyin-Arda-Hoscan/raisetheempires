@@ -303,22 +303,39 @@ def admin():
 
 @app.route('/play.html')
 def play():
-    if 'USERID' not in session or 'user_id' not in session:
+    if 'user_id' not in session:
         return redirect('/login')
         
-    USERID = session['USERID']
+    user = get_user_by_id(session['user_id'])
+    if not user:
+        session.clear()
+        return redirect('/login')
+        
+    USERID = str(user['village_id'])
+    session['USERID'] = USERID
     GAMEVERSION = session.get('GAMEVERSION', 'Basesec_1.5.4.swf')
     
-    user_save = save_info(USERID)
-    if not user_save:
-        load_saves()
-        user_save = save_info(USERID)
-        
-    if not user_save:
-        # Save bulunamazsa yeni oluştur
-        USERID = create_user_village(session.get('username', 'Commander'))
+    # 1. Koyu oturumdan veya veritabanindan yukle
+    village = get_village_session(USERID)
+    
+    # 2. Eger gercekten boyle bir koy yoksa yeni olustur ve veritabanindaki kullaniciya bagla
+    if not village:
+        USERID = create_user_village(user['username'])
         session['USERID'] = USERID
-        user_save = save_info(USERID)
+        try:
+            from database import get_connection, is_postgres
+            conn = get_connection()
+            c = conn.cursor()
+            if is_postgres():
+                c.execute('UPDATE users SET village_id = %s WHERE id = %s', (USERID, user['id']))
+            else:
+                c.execute('UPDATE users SET village_id = ? WHERE id = ?', (USERID, user['id']))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"Error updating user village_id: {e}")
+            
+    user_save = save_info(USERID)
         
     base_url = get_server_base_url()
     
@@ -403,16 +420,52 @@ def flash_sync_error_response():
 
 @app.route(__DYNAMIC_ROOT + '/command.php', methods=['POST'])
 def command_response():
-    USERID = request.values.get('USERID')
-    data_str = request.values.get('data', '')
+    USERID = request.values.get('USERID') or request.values.get('user_id') or request.values.get('fb_sig_user') or session.get('USERID')
+    if not USERID:
+        print('[COMMAND ERROR] No USERID found in request or session!')
+        return jsonify({'result': 'error', 'message': 'no_userid'}), 200
+    USERID = str(USERID)
     
-    if len(data_str) > 64 and data_str[64] == ';':
-        data_payload = data_str[65:]
+    data_str = request.values.get('data')
+    if not data_str:
         try:
-            data = json.loads(data_payload)
+            data_str = request.get_data(as_text=True)
+        except Exception:
+            data_str = ''
+            
+    data = None
+    if data_str:
+        # Case A: Flash 64-char hash + ';' + JSON
+        if len(data_str) > 64 and data_str[64] == ';':
+            try:
+                data = json.loads(data_str[65:])
+            except Exception:
+                pass
+        # Case B: Direct JSON
+        if data is None:
+            try:
+                data = json.loads(data_str)
+            except Exception:
+                pass
+        # Case C: URL-encoded payload
+        if data is None:
+            try:
+                import urllib.parse
+                decoded = urllib.parse.unquote(data_str)
+                if len(decoded) > 64 and decoded[64] == ';':
+                    data = json.loads(decoded[65:])
+                else:
+                    data = json.loads(decoded)
+            except Exception:
+                pass
+
+    if data:
+        try:
             command(USERID, data)
         except Exception as e:
             print(f'[COMMAND ERROR] {e}')
+    else:
+        print(f'[COMMAND WARNING] Could not parse data payload for USERID {USERID}')
             
     return jsonify({'result': 'success'}), 200
 

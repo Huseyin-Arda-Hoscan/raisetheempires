@@ -9,18 +9,21 @@ from engine import timestamp_now, apply_resources, map_add_item, map_add_item_fr
 from math import ceil
 
 def command(USERID, data):
-    first_number = data['first_number']
-    publishActions = data['publishActions']
-    timestamp = data['ts']
-    tries = data['tries']
-    accessToken = data['accessToken']
-    commands = data['commands']
+    first_number = data.get('first_number')
+    publishActions = data.get('publishActions')
+    timestamp = data.get('ts')
+    tries = data.get('tries')
+    accessToken = data.get('accessToken')
+    commands = data.get('commands', [])
     for i, comm in enumerate(commands):
-        map_id = comm[0]
-        cmd = comm[1]
-        args = comm[2]
-        resources_changed = comm[3]
-        do_command(USERID, map_id, cmd, args, resources_changed)
+        try:
+            map_id = comm[0]
+            cmd = comm[1]
+            args = comm[2]
+            resources_changed = comm[3]
+            do_command(USERID, map_id, cmd, args, resources_changed)
+        except Exception as e:
+            print(f"[COMMAND ERROR in {comm[1] if len(comm)>1 else 'unknown'}]: {e}")
     save_session(USERID)
 
 
@@ -537,172 +540,142 @@ def do_command(USERID, map_id, cmd, args, resources_changed):
         privateState['questsRank'][str(quest_index)] = difficulty
     elif cmd == 'end_quest':
         response = None
-        
         try:
-            response = json.loads(args[0])
-        finally:
-            pass
-        print('Error: Failed to parse command.')
-        return None
-        if not response:
-            print('Error: Failed to parse command.')
+            if isinstance(args[0], dict):
+                response = args[0]
+            else:
+                response = json.loads(args[0])
+        except Exception:
+            print('Error: Failed to parse end_quest command.')
             return None
-        win = None
-        duration = 0
-        units = None
-        _map = 0
-        difficulty = None
-        voluntary_end = True
-        quest_id = None
-        if 'win' in response:
-            win = response['win']
-
-        if 'duration' in response:
-            duration = response['duration']
-        if 'units' in response:
-            units = response['units']
-        if 'map' in response:
-            _map = response['map']
-        if 'difficulty' in response:
-            difficulty = max(1, min(3, response['difficulty']))
-        if 'voluntary_end' in response:
-            voluntary_end = response['voluntary_end']
-        if 'quest_id' in response:
-            quest_id = response['quest_id']
+        if not response:
+            print('Error: Failed to parse end_quest command.')
+            return None
+        win = response.get('win')
+        duration = response.get('duration', 0)
+        units = response.get('units') or []
+        _map = response.get('map', 0)
+        difficulty = response.get('difficulty')
+        if difficulty is not None:
+            difficulty = max(1, min(3, difficulty))
+        voluntary_end = response.get('voluntary_end', True)
+        quest_id = response.get('quest_id')
         privateState = save['privateState']
         for unit in units:
             lost = max(0, unit[2] - unit[3])
             if lost > 0:
                 item = unit[0]
-                print(f'''Lost {lost} {get_name_from_item_id(unit[0])}(s)''')
+                print(f'Lost {lost} {get_name_from_item_id(unit[0])}(s)')
                 map_lose_item(map, privateState, unit[0], lost)
-                continue
-                if not quest_id:
-                    print('Error: No quest played.')
-                    return None
-                map['questTimes'][str(quest_id)] = None
-                if win:
-                    print(f'''Won quest {quest_id}''')
-                else:
-                    print(f'''Failed quest {quest_id}''')
-            elif cmd == 'end_attack':
-                response = None
-                unknown = args[1]
-                
-                try:
-                    response = json.loads(args[0])
-                finally:
-                    pass
-                print('Error: Failed to parse command.')
-                return None
-                if not response:
-                    print('Error: Failed to parse command.')
-                    return None
-                voluntary_end = None
-                victim = None
-                attacker = None
-                resources = None
-                honor = 0
-                duration = 0
-                townhall_gold = 0
-                win = False
-                different_island = True
-                victim_units = None
-                attacker_units = None
-                resources_victim = None
-                if 'voluntary_end' in response:
-                    voluntary_end = response['voluntary_end']
+        if not quest_id:
+            print('Error: No quest played.')
+            return None
+        if 'questTimes' not in map:
+            map['questTimes'] = {}
+        map['questTimes'][str(quest_id)] = None
+        if win:
+            print(f'Won quest {quest_id}')
+        else:
+            print(f'Failed quest {quest_id}')
+        return None
 
-                if 'victim' in response:
-                    victim = response['victim']
-                if 'attacker' in response:
-                    attacker = response['attacker']
-                if 'resources' in response:
-                    resources = response['resources']
-                if 'honor' in response:
-                    honor = response['honor']
-                if 'duration' in response:
-                    duration = response['duration']
-                if 'townhall_gold' in response:
-                    townhall_gold = response['townhall_gold']
-                if 'win' in response:
-                    win = response['win']
-                if 'different_island' in response:
-                    different_island = response['different_island']
-                if 'victim_units' in response:
-                    victim_units = response['victim_units']
-                if 'attacker_units' in response:
-                    attacker_units = response['attacker_units']
-                if 'resources_victim' in response:
-                    resources_victim = response['resources_victim']
-                privateState = save['privateState']
-                for unit in attacker_units:
-                    lost = max(0, unit[2] - unit[3])
-                    if lost > 0:
-                        item = unit[0]
-                        print(f'''Lost {lost} {get_name_from_item_id(unit[0])}(s)''')
-                        map_lose_item(map, privateState, unit[0], lost)
-                        continue
-                        if 'name' in victim:
-                            name = victim['name']
-                            if win:
-                                print(f'''Won battle against {name}''')
-                            else:
-                                print(f'''Lost battle against {name}''')
-                        elif win:
-                            print('Won battle')
-                        else:
-                            print('Lost battle')
-                    elif cmd == 'rt_open_graph_unit':
-                        item = args[0]
-                        privateState = save['privateState']
-                        if 'publishedOpenGraphUnit' not in privateState:
-                            privateState['publishedOpenGraphUnit'] = []
-                        if type(privateState['publishedOpenGraphUnit']) != list:
-                            privateState['publishedOpenGraphUnit'] = []
-                        if str(item) not in privateState['publishedOpenGraphUnit']:
-                            privateState['publishedOpenGraphUnit'].append(str(item))
-                        print(f'''Open Unit Graph for {get_name_from_item_id(item)}''')
-                    elif cmd == 'first_time_marketplace':
-                        privateState = save['privateState']
-                        privateState['marketPlaceFirstTime'] = True
-                        print('Seen Auction House')
-                    elif cmd == 'fast_forward':
-                        seconds = args[0]
-                        privateState = save['privateState']
-                        map['timestamp'] = max(0, map['timestamp'] - seconds)
-                        map['timestampLastChapter'] = max(0, map['timestampLastChapter'] - seconds)
-                        map['timestampLastTreasure'] = max(0, map['timestampLastTreasure'] - seconds)
-                        map['timestampLastTrade'] = max(0, map['timestampLastTrade'] - seconds)
-                        privateState['timestampLastBonus'] = max(0, privateState['timestampLastBonus'] - seconds)
-                        privateState['timestampLastAllianceBonus'] = max(0, privateState['timestampLastAllianceBonus'] - seconds)
-                        privateState['timeStampDartsNewFree'] = max(0, privateState['timeStampDartsNewFree'] - seconds)
-                        privateState['tsAttacksReset'] = max(0, privateState['tsAttacksReset'] - seconds)
-                        privateState['tsSpyingsReset'] = max(0, privateState['tsSpyingsReset'] - seconds)
-                        research_timers = privateState['timeStampDoResearch']
-                        num_research_timers = len(research_timers)
-                        i = 0
-                        if i < num_research_timers:
-                            research_timers[i] = max(0, research_timers[i] - seconds)
-                            i += 1
-                            continue
-                        items = map['items']
-                        for index in items:
-                            data = items[index]
-                            data[3] = max(0, data[3] - seconds)
-                            if data[6] and 'ts' in data[6]:
-                                data[6]['ts'] = max(0, data[6]['ts'] - seconds)
-                                continue
-                                questTimes = map['questTimes']
-                                for key in questTimes:
-                                    questTimes[key] = max(0, questTimes[key] - seconds)
-                                print(f'''Fast forwarded {seconds} seconds''')
-                            elif cmd == 'ping':
-                                print('Pong')
-                            elif cmd == 'set_variables':
-                                print('Set player resources')
-                            else:
-                                print(f'''Unhandled command \'{cmd}\' -> args''', args)
-                                return None
-                            return None
+    elif cmd == 'end_attack':
+        response = None
+        try:
+            if isinstance(args[0], dict):
+                response = args[0]
+            else:
+                response = json.loads(args[0])
+        except Exception:
+            print('Error: Failed to parse end_attack command.')
+            return None
+        if not response:
+            print('Error: Failed to parse end_attack command.')
+            return None
+        voluntary_end = response.get('voluntary_end')
+        victim = response.get('victim') or {}
+        attacker = response.get('attacker') or {}
+        resources = response.get('resources')
+        honor = response.get('honor', 0)
+        duration = response.get('duration', 0)
+        townhall_gold = response.get('townhall_gold', 0)
+        win = response.get('win', False)
+        different_island = response.get('different_island', True)
+        victim_units = response.get('victim_units') or []
+        attacker_units = response.get('attacker_units') or []
+        resources_victim = response.get('resources_victim')
+        privateState = save['privateState']
+        for unit in attacker_units:
+            lost = max(0, unit[2] - unit[3])
+            if lost > 0:
+                item = unit[0]
+                print(f'Lost {lost} {get_name_from_item_id(unit[0])}(s)')
+                map_lose_item(map, privateState, unit[0], lost)
+        if 'name' in victim:
+            name = victim['name']
+            if win:
+                print(f'Won battle against {name}')
+            else:
+                print(f'Lost battle against {name}')
+        elif win:
+            print('Won battle')
+        else:
+            print('Lost battle')
+        return None
+
+    elif cmd == 'rt_open_graph_unit':
+        item = args[0]
+        privateState = save['privateState']
+        if 'publishedOpenGraphUnit' not in privateState or not isinstance(privateState['publishedOpenGraphUnit'], list):
+            privateState['publishedOpenGraphUnit'] = []
+        if str(item) not in privateState['publishedOpenGraphUnit']:
+            privateState['publishedOpenGraphUnit'].append(str(item))
+        print(f'Open Unit Graph for {get_name_from_item_id(item)}')
+        return None
+
+    elif cmd == 'first_time_marketplace':
+        privateState = save['privateState']
+        privateState['marketPlaceFirstTime'] = True
+        print('Seen Auction House')
+        return None
+
+    elif cmd == 'fast_forward':
+        seconds = args[0]
+        privateState = save['privateState']
+        map['timestamp'] = max(0, map.get('timestamp', 0) - seconds)
+        map['timestampLastChapter'] = max(0, map.get('timestampLastChapter', 0) - seconds)
+        map['timestampLastTreasure'] = max(0, map.get('timestampLastTreasure', 0) - seconds)
+        map['timestampLastTrade'] = max(0, map.get('timestampLastTrade', 0) - seconds)
+        privateState['timestampLastBonus'] = max(0, privateState.get('timestampLastBonus', 0) - seconds)
+        privateState['timestampLastAllianceBonus'] = max(0, privateState.get('timestampLastAllianceBonus', 0) - seconds)
+        privateState['timeStampDartsNewFree'] = max(0, privateState.get('timeStampDartsNewFree', 0) - seconds)
+        privateState['tsAttacksReset'] = max(0, privateState.get('tsAttacksReset', 0) - seconds)
+        privateState['tsSpyingsReset'] = max(0, privateState.get('tsSpyingsReset', 0) - seconds)
+        research_timers = privateState.get('timeStampDoResearch', [])
+        for i in range(len(research_timers)):
+            research_timers[i] = max(0, research_timers[i] - seconds)
+        items = map.get('items', {})
+        for index in items:
+            data = items[index]
+            data[3] = max(0, data[3] - seconds)
+            if len(data) > 6 and data[6] and isinstance(data[6], dict) and 'ts' in data[6]:
+                data[6]['ts'] = max(0, data[6]['ts'] - seconds)
+        questTimes = map.get('questTimes', {})
+        for key in questTimes:
+            if questTimes[key] is not None:
+                questTimes[key] = max(0, questTimes[key] - seconds)
+        print(f'Fast forwarded {seconds} seconds')
+        return None
+
+    elif cmd == 'ping':
+        print('Pong')
+        return None
+
+    elif cmd == 'set_variables':
+        print('Set player resources')
+        return None
+
+    else:
+        print(f"Unhandled command '{cmd}' -> args {args}")
+        return None
 

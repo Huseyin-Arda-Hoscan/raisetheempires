@@ -18,52 +18,40 @@ __initial_village = json.load(open(__initial_village_path, 'r', encoding='utf-8'
 def is_valid_village(save=None):
     if not isinstance(save, dict):
         return False
-    if 'playerInfo' not in save or 'maps' not in save or 'privateState' not in save:
+    if 'playerInfo' not in save or 'maps' not in save:
         return False
-    for m in save['maps']:
-        if 'oil' not in m or 'steel' not in m:
-            return False
-        if 'stone' in m or 'food' in m:
-            return False
-        if 'items' not in m:
-            return False
-        if type(m['items']) != dict:
-            return False
+    if not isinstance(save['maps'], list) or len(save['maps']) == 0:
+        return False
+    if not isinstance(save.get('playerInfo'), dict):
+        return False
+    if not isinstance(save['maps'][0], dict):
+        return False
+    if 'privateState' not in save or not isinstance(save.get('privateState'), dict):
+        save['privateState'] = {}
     return True
 
 def load_saves():
     global __saves
-    __saves = {}
     if not os.path.exists(SAVES_DIR):
         try:
-            print(f"Creating '{SAVES_DIR}' folder...")
-            os.mkdir(SAVES_DIR)
+            os.makedirs(SAVES_DIR, exist_ok=True)
         except Exception:
-            print(f"Could not create '{SAVES_DIR}' folder.")
-            exit(1)
-    if not os.path.isdir(SAVES_DIR):
-        print(f"'{SAVES_DIR}' is not a folder... Move the file somewhere else.")
-        exit(1)
+            pass
 
-    for file in os.listdir(SAVES_DIR):
-        if not file.endswith('.json'):
-            continue
-        print(f" * Loading SAVE: village at {file}... ", end='')
-        try:
-            with open(os.path.join(SAVES_DIR, file), 'r', encoding='utf-8') as f:
-                save = json.load(f)
-        except json.decoder.JSONDecodeError:
-            print('Corrupted JSON.')
-            continue
-        if not is_valid_village(save):
-            print('Invalid Save')
-            continue
-        USERID = str(save['playerInfo']['pid'])
-        print('PLAYER USERID:', USERID)
-        __saves[USERID] = save
-        modified = migrate_loaded_save(save)
-        if modified:
-            save_session(USERID)
+    if os.path.exists(SAVES_DIR) and os.path.isdir(SAVES_DIR):
+        for file in os.listdir(SAVES_DIR):
+            if not file.endswith('.json'):
+                continue
+            try:
+                with open(os.path.join(SAVES_DIR, file), 'r', encoding='utf-8') as f:
+                    save = json.load(f)
+                if is_valid_village(save):
+                    USERID = str(save['playerInfo'].get('pid', file.split('.')[0]))
+                    if USERID not in __saves:
+                        __saves[USERID] = save
+                        migrate_loaded_save(save)
+            except Exception as e:
+                print(f"Error loading local save {file}: {e}")
 
     # 2. Veritabanindan (Supabase / Postgres / SQLite) kayitlari yukle
     try:
@@ -71,8 +59,10 @@ def load_saves():
         db_villages = db_load_all_villages()
         for vid, save in db_villages.items():
             if is_valid_village(save):
-                __saves[str(vid)] = save
-                print(f" * Loaded DB SAVE: {vid}")
+                vid_str = str(vid)
+                if vid_str not in __saves:
+                    __saves[vid_str] = save
+                    print(f" * Loaded DB SAVE: {vid_str}")
     except Exception as e:
         print(f" * DB Save Load Note: {e}")
 
@@ -157,15 +147,20 @@ def all_userid():
     return list(__villages.keys()) + list(__saves.keys()) + list(__quests.keys())
 
 def save_info(USERID=None):
-    if USERID not in __saves:
+    if not USERID:
         return None
-    save = __saves[USERID]
-    default_map = save['playerInfo'].get('default_map', 0)
-    empire_name = str(save['playerInfo'].get('name', 'Empire'))
-    xp = save['maps'][default_map].get('xp', 0)
-    level = save['maps'][default_map].get('level', 1)
-    cash = save['playerInfo'].get('cash', 0)
-    coins = save['maps'][default_map].get('gold', 0)
+    USERID = str(USERID)
+    save = __saves.get(USERID) or session(USERID)
+    if not save:
+        return None
+    default_map = save.get('playerInfo', {}).get('default_map', 0)
+    empire_name = str(save.get('playerInfo', {}).get('name', 'Empire'))
+    maps = save.get('maps', [{}])
+    target_map = maps[default_map] if default_map < len(maps) else maps[0]
+    xp = target_map.get('xp', 0)
+    level = target_map.get('level', 1)
+    cash = save.get('playerInfo', {}).get('cash', 0)
+    coins = target_map.get('gold', 0)
     return {
         'userid': USERID,
         'name': empire_name,
@@ -177,15 +172,16 @@ def save_info(USERID=None):
 
 def all_saves_info():
     saves_info = []
-    for userid in __saves:
+    for userid in list(__saves.keys()):
         info = save_info(userid)
         if info:
             saves_info.append(info)
     return saves_info
 
 def session(USERID=None):
-    if not USERID or not isinstance(USERID, str):
+    if not USERID:
         return None
+    USERID = str(USERID)
     if USERID in __saves:
         return __saves[USERID]
         
@@ -209,8 +205,8 @@ def session(USERID=None):
         if db_s and is_valid_village(db_s):
             __saves[USERID] = db_s
             return db_s
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Error loading village from DB for {USERID}: {e}")
                 
     # 3. Yoksa yeni koy olustur (ASLA None donup oyunu cokertme)
     try:
@@ -296,15 +292,23 @@ def neighbors(USERID=None):
     return neighs
 
 def save_session(USERID=None):
+    if not USERID:
+        return
+    USERID = str(USERID)
     file = f'{USERID}.save.json'
-    print(f" * Saving village at {file}... ", end='')
-    village = session(USERID)
+    print(f" * Saving village {USERID}... ", end='')
+    village = __saves.get(USERID) or session(USERID)
     if not village:
         print('Not found!')
         return
-    save_path = os.path.join(SAVES_DIR, file)
-    with open(save_path, 'w', encoding='utf-8') as f:
-        json.dump(village, f, indent=4)
+    try:
+        if not os.path.exists(SAVES_DIR):
+            os.makedirs(SAVES_DIR, exist_ok=True)
+        save_path = os.path.join(SAVES_DIR, file)
+        with open(save_path, 'w', encoding='utf-8') as f:
+            json.dump(village, f, indent=4)
+    except Exception as e:
+        print(f" * Disk Save Note: {e}")
         
     # Supabase / DB'ye de kalici olarak yaz
     try:

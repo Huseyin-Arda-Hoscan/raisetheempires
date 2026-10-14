@@ -277,7 +277,7 @@ def db_save_village(village_id, village_dict):
     conn = get_connection()
     try:
         cursor = conn.cursor()
-        payload = json.dumps(village_dict)
+        payload = json.dumps(village_dict, default=str)
         if is_postgres():
             cursor.execute('''
                 INSERT INTO village_saves (village_id, save_data, updated_at) 
@@ -306,7 +306,10 @@ def db_load_all_villages():
         cursor.execute('SELECT village_id, save_data FROM village_saves')
         rows = cursor.fetchall()
         for vid, sdata in rows:
-            villages[str(vid)] = json.loads(sdata)
+            try:
+                villages[str(vid)] = json.loads(sdata)
+            except Exception as e:
+                print(f"[DB LOAD VILLAGE JSON ERROR for {vid}]: {e}")
     except Exception as e:
         print(f"[DB LOAD ALL ERROR] {e}")
     finally:
