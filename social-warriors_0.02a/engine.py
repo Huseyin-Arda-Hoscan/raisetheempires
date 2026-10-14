@@ -9,17 +9,7 @@ def timestamp_now():
     return int(time.time())
 
 
-def map_add_item(map, index, item, x, y, orientation = None, timestamp = None, attr = None, store = (0, None, None, None, 1), player = {
-    'map': dict,
-    'index': int,
-    'item': int,
-    'x': int,
-    'y': int,
-    'orientation': int,
-    'timestamp': int,
-    'attr': dict,
-    'store': list,
-    'player': int }):
+def map_add_item(map, index, item, x, y, orientation = 0, timestamp = None, attr = None, store = None, player = 1):
     if not attr:
         attr = { }
     if not store:

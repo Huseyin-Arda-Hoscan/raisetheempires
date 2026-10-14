@@ -31,7 +31,7 @@ def do_command(USERID, map_id, cmd, args, resources_changed):
     save = session(USERID)
     time_now = timestamp_now()
     map = save['maps'][map_id]
-    print(' [+] COMMAND: ', cmd, '(', args, ') -> ', '', '', **('sep', 'end'))
+    print(' [+] COMMAND: ', cmd, '(', args, ') -> ', sep='', end='')
     apply_resources(save, map, resources_changed)
     if cmd == 'buy':
         item_index = args[0]
@@ -39,29 +39,36 @@ def do_command(USERID, map_id, cmd, args, resources_changed):
         x = args[2]
         y = args[3]
         playerID = args[4]
-        orientation = args[5]
-        unknown = args[6]
-        reason = args[7]
+        orientation = args[5] if len(args) > 5 else 0
+        unknown = args[6] if len(args) > 6 else 0
+        reason = args[7] if len(args) > 7 else ''
         if playerID == 1:
             bought_unit_add(save, item_id)
-        map_add_item(map, item_index, item_id, x, y, orientation, playerID, **('orientation', 'player'))
-        print('Add', str(get_name_from_item_id(item_id)), 'at', f'''({x},{y})''')
+        map_add_item(map, item_index, item_id, x, y, orientation=orientation, player=playerID)
+        print('Add', str(get_name_from_item_id(item_id)), 'at', f'({x},{y})')
         return None
     elif cmd == 'complete_tutorial':
         tutorial_step = args[0]
         print('Tutorial step', tutorial_step, 'reached.')
-        if tutorial_step >= 25 or tutorial_step == 15:
+        save['playerInfo']['tutorial_step'] = tutorial_step
+        if tutorial_step >= 12 or tutorial_step == 15 or tutorial_step >= 25:
             print('Tutorial COMPLETED!')
             save['playerInfo']['completed_tutorial'] = 1
         return None
     elif cmd == 'set_goals':
         goal_id = args[0]
-        progress = json.loads(args[1])
+        try:
+            if isinstance(args[1], str):
+                progress = json.loads(args[1])
+            else:
+                progress = args[1]
+        except Exception:
+            progress = args[1]
         set_goals(save['privateState'], goal_id, progress)
-        print("Goal '", get_attribute_from_goal_id(goal_id, 'title'), "' progressed.", '', **('sep',))
+        print("Goal '", get_attribute_from_goal_id(goal_id, 'title'), "' progressed.", sep='')
     elif cmd == 'complete_goal':
         goal_id = args[0]
-        print("Goal '", get_attribute_from_goal_id(goal_id, 'title'), "' completed.", '', **('sep',))
+        print("Goal '", get_attribute_from_goal_id(goal_id, 'title'), "' completed.", sep='')
     elif cmd == 'level_up':
         new_level = args[0]
         map['level'] = new_level
@@ -170,7 +177,7 @@ def do_command(USERID, map_id, cmd, args, resources_changed):
         unknown_imgIndex = args[7]
         name = str(get_name_from_item_id(item_id))
         remove_store_item(map, item_id)
-        map_add_item(map, item_index, item_id, x, y, orientation, **('orientation',))
+        map_add_item(map, item_index, item_id, x, y, orientation=orientation, player=playerID)
         bought_unit_add(save, item_id)
         print(f'''Placed stored {name}.''')
     elif cmd == 'sell_stored_item':
@@ -256,7 +263,7 @@ def do_command(USERID, map_id, cmd, args, resources_changed):
             x = args[2]
             y = args[3]
             playerID = args[4]
-            map_add_item(map, item_index, item_id, x, y, playerID, **('player',))
+            map_add_item(map, item_index, item_id, x, y, player=playerID)
             bought_unit_add(save, item_id)
             print('Won', str(get_name_from_item_id(item_id)))
         else:

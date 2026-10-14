@@ -386,14 +386,19 @@ def get_game_config_response():
     print(f'[CONFIG] USERID {USERID}.')
     return jsonify(get_game_config())
 
-@app.route(__DYNAMIC_ROOT + '/get_player_info.php', methods=['POST'])
+@app.route(__DYNAMIC_ROOT + '/get_player_info.php', methods=['GET', 'POST'])
 def get_player_info_response():
-    USERID = request.values.get('USERID')
+    USERID = request.values.get('USERID') or request.values.get('user_id') or request.values.get('fb_sig_user') or session.get('USERID')
     user = request.values.get('user')
     map_idx = int(request.values.get('map', 0)) if 'map' in request.values else None
     
-    if user is None:
-        print(f'[PLAYER INFO] USERID {USERID}.')
+    if not USERID:
+        print('[PLAYER INFO ERROR] No USERID provided!')
+        return jsonify({'result': 'error', 'error': 'no_userid'}), 200
+    USERID = str(USERID)
+    
+    if user is None or user == '' or user == '0' or str(user) == USERID:
+        print(f'[PLAYER INFO] Loading home base for USERID {USERID}.')
         return jsonify(get_player_info(USERID))
         
     if user in ('100000030', '100000031'):
